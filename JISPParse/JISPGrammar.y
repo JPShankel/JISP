@@ -9,13 +9,20 @@ int yylex();
 int jisp_parse_line;
 extern int jisp_lex_line;
 
+const char *GetToken(unsigned int index);
+
 
 %}
 
 %start statement_list
 
-%token NUM
+%token INTEGER
+%token FLOAT
+%token RATIONAL
+%token IDENTIFIER
 %token STRING
+%token BOOLEAN
+%token CHARACTER
 
 
 
@@ -28,8 +35,16 @@ statement_list : statement
 ;
 
 
-statement : NUM
-| STRING
+statement : number
+| STRING {printf("string: %s\n",GetToken($1));}
+| BOOLEAN {printf("bool: %s\n",GetToken($1));}
+;
+
+number: INTEGER {printf("integer: %s\n",GetToken($1));}
+| FLOAT {printf("float: %s\n",GetToken($1));}
+| RATIONAL {printf("fraction: %s\n",GetToken($1));}
+| IDENTIFIER {printf("identifier: %s\n",GetToken($1));}
+| CHARACTER {printf("character: %s\n",GetToken($1));}
 ;
 
 

@@ -19,11 +19,13 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\boost\boost_1_40&quot;"
+				AdditionalIncludeDirectories=""
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="5"
+				TreatWChar_tAsBuiltInType="TRUE"
+				ForceConformanceInForLoopScope="TRUE"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
@@ -166,6 +168,12 @@
 			Name="JISPParse"
 			Filter="">
 			<File
+				RelativePath="..\..\JISPParse\JISPCompile.cpp">
+			</File>
+			<File
+				RelativePath="..\..\JISPParse\JISPCompile.h">
+			</File>
+			<File
 				RelativePath="..\..\JISPParse\JISPGrammar.c">
 			</File>
 			<File
@@ -177,7 +185,8 @@
 					Name="Debug|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
-						CommandLine="C:\projects\JISP\JISPParse\BuildYacc $(InputName)"
+						CommandLine="C:\projects\JISP\JISPParse\BuildYacc $(InputName)
+"
 						Outputs="$(InputName).c,$(InputName).h"/>
 				</FileConfiguration>
 			</File>
@@ -190,7 +199,8 @@
 					Name="Debug|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
-						CommandLine="C:\projects\JISP\JISPParse\BuildLex $(InputName)"
+						CommandLine="C:\projects\JISP\JISPParse\BuildLex $(InputName)
+"
 						Outputs="$(InputName).c"/>
 				</FileConfiguration>
 			</File>

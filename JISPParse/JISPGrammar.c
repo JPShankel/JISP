@@ -5,8 +5,13 @@
 
 #define YYBISON 1  /* Identify Bison output.  */
 
-#define	NUM	258
-#define	STRING	259
+#define	INTEGER	258
+#define	FLOAT	259
+#define	RATIONAL	260
+#define	IDENTIFIER	261
+#define	STRING	262
+#define	BOOLEAN	263
+#define	CHARACTER	264
 
 #line 1 "temp.y"
 
@@ -19,6 +24,8 @@ int yylex();
 
 int jisp_parse_line;
 extern int jisp_lex_line;
+
+const char *GetToken(unsigned int index);
 
 
 #ifndef YYSTYPE
@@ -34,11 +41,11 @@ extern int jisp_lex_line;
 
 
 
-#define	YYFINAL		7
+#define	YYFINAL		13
 #define	YYFLAG		-32768
-#define	YYNTBASE	5
+#define	YYNTBASE	10
 
-#define YYTRANSLATE(x) ((unsigned)(x) <= 259 ? yytranslate[x] : 7)
+#define YYTRANSLATE(x) ((unsigned)(x) <= 264 ? yytranslate[x] : 13)
 
 static const char yytranslate[] = {     0,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -66,68 +73,75 @@ static const char yytranslate[] = {     0,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     1,     2,     3,     4
+     2,     2,     2,     2,     2,     1,     2,     3,     4,     5,
+     6,     7,     8,     9
 };
 
 #if YYDEBUG != 0
 static const short yyprhs[] = {     0,
-     0,     2,     5,     7
+     0,     2,     5,     7,     9,    11,    13,    15,    17,    19
 };
 
-static const short yyrhs[] = {     6,
-     0,     5,     6,     0,     3,     0,     4,     0
+static const short yyrhs[] = {    11,
+     0,    10,    11,     0,    12,     0,     7,     0,     8,     0,
+     3,     0,     4,     0,     5,     0,     6,     0,     9,     0
 };
 
 #endif
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-    26,    27,    31,    32
+    33,    34,    38,    39,    40,    43,    44,    45,    46,    47
 };
 #endif
 
 
 #if YYDEBUG != 0 || defined (YYERROR_VERBOSE)
 
-static const char * const yytname[] = {   "$","error","$undefined.","NUM","STRING",
-"statement_list","statement", NULL
+static const char * const yytname[] = {   "$","error","$undefined.","INTEGER",
+"FLOAT","RATIONAL","IDENTIFIER","STRING","BOOLEAN","CHARACTER","statement_list",
+"statement","number", NULL
 };
 #endif
 
 static const short yyr1[] = {     0,
-     5,     5,     6,     6
+    10,    10,    11,    11,    11,    12,    12,    12,    12,    12
 };
 
 static const short yyr2[] = {     0,
-     1,     2,     1,     1
+     1,     2,     1,     1,     1,     1,     1,     1,     1,     1
 };
 
 static const short yydefact[] = {     0,
-     3,     4,     0,     1,     2,     0,     0
+     6,     7,     8,     9,     4,     5,    10,     0,     1,     3,
+     2,     0,     0
 };
 
-static const short yydefgoto[] = {     3,
-     4
+static const short yydefgoto[] = {     8,
+     9,    10
 };
 
-static const short yypact[] = {    -2,
--32768,-32768,     0,-32768,-32768,     5,-32768
+static const short yypact[] = {     7,
+-32768,-32768,-32768,-32768,-32768,-32768,-32768,     0,-32768,-32768,
+-32768,     1,-32768
 };
 
 static const short yypgoto[] = {-32768,
-     3
+    -6,-32768
 };
 
 
-#define	YYLAST		6
+#define	YYLAST		16
 
 
-static const short yytable[] = {     6,
-     1,     2,     1,     2,     7,     5
+static const short yytable[] = {    12,
+    13,    11,     1,     2,     3,     4,     5,     6,     7,     1,
+     2,     3,     4,     5,     6,     7
 };
 
 static const short yycheck[] = {     0,
-     3,     4,     3,     4,     0,     3
+     0,     8,     3,     4,     5,     6,     7,     8,     9,     3,
+     4,     5,     6,     7,     8,     9
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
 #line 3 "bison.simple"
@@ -639,6 +653,34 @@ yyreduce:
 
   switch (yyn) {
 
+case 4:
+#line 39 "temp.y"
+{printf("string: %s\n",GetToken(yyvsp[0]));;
+    break;}
+case 5:
+#line 40 "temp.y"
+{printf("bool: %s\n",GetToken(yyvsp[0]));;
+    break;}
+case 6:
+#line 43 "temp.y"
+{printf("integer: %s\n",GetToken(yyvsp[0]));;
+    break;}
+case 7:
+#line 44 "temp.y"
+{printf("float: %s\n",GetToken(yyvsp[0]));;
+    break;}
+case 8:
+#line 45 "temp.y"
+{printf("fraction: %s\n",GetToken(yyvsp[0]));;
+    break;}
+case 9:
+#line 46 "temp.y"
+{printf("identifier: %s\n",GetToken(yyvsp[0]));;
+    break;}
+case 10:
+#line 47 "temp.y"
+{printf("character: %s\n",GetToken(yyvsp[0]));;
+    break;}
 }
    /* the action file gets copied in in place of this dollarsign */
 #line 498 "bison.simple"
@@ -837,6 +879,6 @@ yyerrhandle:
   yystate = yyn;
   goto yynewstate;
 }
-#line 36 "temp.y"
+#line 51 "temp.y"
 
 

@@ -12,17 +12,37 @@ extern int jisp_parse_line;
 #undef YY_INPUT
 #define YY_INPUT(buf,result,max_size) (result = YYInput(buf,max_size))
 
-
 %}
 %%
 
+[#][tfTF] {if (in_comment) REJECT; yylval = AddToken(yytext);return BOOLEAN;}
 
-[0-9]+ {if (in_comment) REJECT;yylval = AddToken(yytext);return NUM; }
+"#\\nul" {if (in_comment) REJECT;yylval = AddToken(yytext);return CHARACTER;}
+"#\\alarm" {if (in_comment) REJECT;yylval = AddToken(yytext);return CHARACTER;}
+"#\\backspace" {if (in_comment) REJECT;yylval = AddToken(yytext);return CHARACTER;}
+"#\\tab" {if (in_comment) REJECT;yylval = AddToken(yytext);return CHARACTER;}
+"#\\newline" {if (in_comment) REJECT;yylval = AddToken(yytext);return CHARACTER;}
+"#\\linefeed" {if (in_comment) REJECT;yylval = AddToken(yytext);return CHARACTER;}
+"#\\vtab" {if (in_comment) REJECT;yylval = AddToken(yytext);return CHARACTER;}
+"#\\page" {if (in_comment) REJECT;yylval = AddToken(yytext);return CHARACTER;}
+"#\\return" {if (in_comment) REJECT;yylval = AddToken(yytext);return CHARACTER;}
+"#\\escape" {if (in_comment) REJECT;yylval = AddToken(yytext);return CHARACTER;}
+"#\\space" {if (in_comment) REJECT;yylval = AddToken(yytext);return CHARACTER;}
+"#\\delete" {if (in_comment) REJECT;yylval = AddToken(yytext);return CHARACTER;}
 
-[0-9]+[.][0-9]+ {if (in_comment) REJECT;yylval = AddToken(yytext);return NUM;}
-[.][0-9]+ {if (in_comment) REJECT;yylval = AddToken(yytext);return NUM;}
+[#][\\][A-Za-z0-9_!@#$%^&*()\-+={}\\|\[\]\?><,./;:'] {if (in_comment) REJECT;yylval = AddToken(yytext);return CHARACTER;}
 
-[A-Za-z][A-Za-z0-9_]* {if (in_comment) REJECT;yylval = AddToken(yytext);return STRING;}
+[0-9]+ {if (in_comment) REJECT;yylval = AddToken(yytext);return INTEGER; }
+
+[0-9]+[/][0-9]+ {if (in_comment) REJECT; yylval = AddToken(yytext);return RATIONAL;}
+
+[0-9]+[.][0-9]+ {if (in_comment) REJECT;yylval = AddToken(yytext);return FLOAT;}
+
+[.][0-9]+ {if (in_comment) REJECT;yylval = AddToken(yytext);return FLOAT;}
+
+[A-Za-z][A-Za-z0-9_]* {if (in_comment) REJECT;yylval = AddToken(yytext);return IDENTIFIER;}
+
+[\"][A-Za-z0-9_ !@#$%^&*()\-+={}\\|\[\]\?><,./;:']*[\"] {if (in_comment) REJECT;yylval = AddToken(yytext);return STRING;}
 
 . { if(in_comment) REJECT; }
 %%
@@ -46,7 +66,7 @@ int YYInput(char *buf,int max_size)
 	return n;
 }
 
-void compile(char *str)
+void compile(const char *str)
 {
 	in_comment = 0;
 	jisp_lex_line = 0;
