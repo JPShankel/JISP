@@ -12,6 +12,9 @@
 #define	STRING	262
 #define	BOOLEAN	263
 #define	CHARACTER	264
+#define	OPENPAREN	265
+#define	CLOSEDPAREN	266
+#define	QUOTE	267
 
 #line 1 "temp.y"
 
@@ -41,11 +44,11 @@ const char *GetToken(unsigned int index);
 
 
 
-#define	YYFINAL		13
+#define	YYFINAL		22
 #define	YYFLAG		-32768
-#define	YYNTBASE	10
+#define	YYNTBASE	13
 
-#define YYTRANSLATE(x) ((unsigned)(x) <= 264 ? yytranslate[x] : 13)
+#define YYTRANSLATE(x) ((unsigned)(x) <= 267 ? yytranslate[x] : 18)
 
 static const char yytranslate[] = {     0,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -74,24 +77,28 @@ static const char yytranslate[] = {     0,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     1,     2,     3,     4,     5,
-     6,     7,     8,     9
+     6,     7,     8,     9,    10,    11,    12
 };
 
 #if YYDEBUG != 0
 static const short yyprhs[] = {     0,
-     0,     2,     5,     7,     9,    11,    13,    15,    17,    19
+     0,     4,     8,    10,    13,    15,    17,    19,    21,    23,
+    26,    28,    30,    32,    34
 };
 
-static const short yyrhs[] = {    11,
-     0,    10,    11,     0,    12,     0,     7,     0,     8,     0,
-     3,     0,     4,     0,     5,     0,     6,     0,     9,     0
+static const short yyrhs[] = {    10,
+    14,    11,     0,    10,    13,    11,     0,    15,     0,    14,
+    15,     0,    16,     0,    13,     0,    17,     0,     7,     0,
+     8,     0,    12,    16,     0,     3,     0,     4,     0,     5,
+     0,     6,     0,     9,     0
 };
 
 #endif
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-    33,    34,    38,    39,    40,    43,    44,    45,    46,    47
+    35,    36,    39,    40,    43,    44,    47,    48,    49,    50,
+    53,    54,    55,    56,    57
 };
 #endif
 
@@ -99,49 +106,57 @@ static const short yyrline[] = { 0,
 #if YYDEBUG != 0 || defined (YYERROR_VERBOSE)
 
 static const char * const yytname[] = {   "$","error","$undefined.","INTEGER",
-"FLOAT","RATIONAL","IDENTIFIER","STRING","BOOLEAN","CHARACTER","statement_list",
-"statement","number", NULL
+"FLOAT","RATIONAL","IDENTIFIER","STRING","BOOLEAN","CHARACTER","OPENPAREN","CLOSEDPAREN",
+"QUOTE","list","list_elements","list_element","terminal_element","number", NULL
 };
 #endif
 
 static const short yyr1[] = {     0,
-    10,    10,    11,    11,    11,    12,    12,    12,    12,    12
+    13,    13,    14,    14,    15,    15,    16,    16,    16,    16,
+    17,    17,    17,    17,    17
 };
 
 static const short yyr2[] = {     0,
-     1,     2,     1,     1,     1,     1,     1,     1,     1,     1
+     3,     3,     1,     2,     1,     1,     1,     1,     1,     2,
+     1,     1,     1,     1,     1
 };
 
 static const short yydefact[] = {     0,
-     6,     7,     8,     9,     4,     5,    10,     0,     1,     3,
-     2,     0,     0
+     0,    11,    12,    13,    14,     8,     9,    15,     0,     6,
+     0,     3,     5,     7,    10,     2,     1,     6,     4,     0,
+     0,     0
 };
 
-static const short yydefgoto[] = {     8,
-     9,    10
+static const short yydefgoto[] = {    10,
+    11,    12,    13,    14
 };
 
-static const short yypact[] = {     7,
--32768,-32768,-32768,-32768,-32768,-32768,-32768,     0,-32768,-32768,
--32768,     1,-32768
+static const short yypact[] = {    10,
+     9,-32768,-32768,-32768,-32768,-32768,-32768,-32768,    19,    18,
+    -2,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,    30,
+    32,-32768
 };
 
-static const short yypgoto[] = {-32768,
-    -6,-32768
+static const short yypgoto[] = {     0,
+-32768,    22,    25,-32768
 };
 
 
-#define	YYLAST		16
+#define	YYLAST		34
 
 
-static const short yytable[] = {    12,
-    13,    11,     1,     2,     3,     4,     5,     6,     7,     1,
-     2,     3,     4,     5,     6,     7
+static const short yytable[] = {    20,
+     2,     3,     4,     5,     6,     7,     8,     1,    17,     9,
+    18,     2,     3,     4,     5,     6,     7,     8,     1,     1,
+     9,     2,     3,     4,     5,     6,     7,     8,    16,    21,
+     9,    22,    19,    15
 };
 
 static const short yycheck[] = {     0,
-     0,     8,     3,     4,     5,     6,     7,     8,     9,     3,
-     4,     5,     6,     7,     8,     9
+     3,     4,     5,     6,     7,     8,     9,    10,    11,    12,
+    11,     3,     4,     5,     6,     7,     8,     9,    10,    10,
+    12,     3,     4,     5,     6,     7,     8,     9,    11,     0,
+    12,     0,    11,     9
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
 #line 3 "bison.simple"
@@ -653,33 +668,65 @@ yyreduce:
 
   switch (yyn) {
 
-case 4:
+case 1:
+#line 35 "temp.y"
+{yyval=yyvsp[-1];printf("list %s\n",GetToken(yyvsp[-1]));;
+    break;}
+case 2:
+#line 36 "temp.y"
+{yyval=yyvsp[-1];printf("list %s\n",GetToken(yyvsp[-1]));;
+    break;}
+case 3:
 #line 39 "temp.y"
-{printf("string: %s\n",GetToken(yyvsp[0]));;
+{yyval=yyvsp[0];printf("list element: %s\n",GetToken(yyvsp[0]));;
+    break;}
+case 4:
+#line 40 "temp.y"
+{yyval=yyvsp[0];printf("list elements: %s\n",GetToken(yyvsp[-1]));;
     break;}
 case 5:
-#line 40 "temp.y"
-{printf("bool: %s\n",GetToken(yyvsp[0]));;
+#line 43 "temp.y"
+{yyval=yyvsp[0];printf("terminal element: %s\n",GetToken(yyvsp[0]));;
     break;}
 case 6:
-#line 43 "temp.y"
-{printf("integer: %s\n",GetToken(yyvsp[0]));;
+#line 44 "temp.y"
+{yyval=yyvsp[0];printf("list in list element: %s\n",GetToken(yyvsp[0]));;
     break;}
 case 7:
-#line 44 "temp.y"
-{printf("float: %s\n",GetToken(yyvsp[0]));;
+#line 47 "temp.y"
+{yyval=yyvsp[0];printf("number %s\n",GetToken(yyvsp[0]));;
     break;}
 case 8:
-#line 45 "temp.y"
-{printf("fraction: %s\n",GetToken(yyvsp[0]));;
+#line 48 "temp.y"
+{yyval=yyvsp[0];printf("string: %s\n",GetToken(yyvsp[0]));;
     break;}
 case 9:
-#line 46 "temp.y"
-{printf("identifier: %s\n",GetToken(yyvsp[0]));;
+#line 49 "temp.y"
+{yyval=yyvsp[0];printf("bool: %s\n",GetToken(yyvsp[0]));;
     break;}
 case 10:
-#line 47 "temp.y"
-{printf("character: %s\n",GetToken(yyvsp[0]));;
+#line 50 "temp.y"
+{yyval=yyvsp[-1];printf("quoted %s\n",GetToken(yyvsp[0]));;
+    break;}
+case 11:
+#line 53 "temp.y"
+{yyval=yyvsp[0];printf("integer: %s\n",GetToken(yyvsp[0]));;
+    break;}
+case 12:
+#line 54 "temp.y"
+{yyval=yyvsp[0];printf("float: %s\n",GetToken(yyvsp[0]));;
+    break;}
+case 13:
+#line 55 "temp.y"
+{yyval=yyvsp[0];printf("fraction: %s\n",GetToken(yyvsp[0]));;
+    break;}
+case 14:
+#line 56 "temp.y"
+{yyval=yyvsp[0];printf("identifier: %s\n",GetToken(yyvsp[0]));;
+    break;}
+case 15:
+#line 57 "temp.y"
+{yyval=yyvsp[0];printf("character: %s\n",GetToken(yyvsp[0]));;
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
@@ -879,6 +926,6 @@ yyerrhandle:
   yystate = yyn;
   goto yynewstate;
 }
-#line 51 "temp.y"
+#line 61 "temp.y"
 
 

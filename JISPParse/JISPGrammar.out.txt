@@ -1,85 +1,267 @@
+State 10 contains 1 shift/reduce conflict.
 
 Grammar
-rule 1    statement_list -> statement
-rule 2    statement_list -> statement_list statement
-rule 3    statement -> NUM
-rule 4    statement -> STRING
+rule 1    list -> OPENPAREN list_elements CLOSEDPAREN
+rule 2    list -> OPENPAREN list CLOSEDPAREN
+rule 3    list_elements -> list_element
+rule 4    list_elements -> list_elements list_element
+rule 5    list_element -> terminal_element
+rule 6    list_element -> list
+rule 7    terminal_element -> number
+rule 8    terminal_element -> STRING
+rule 9    terminal_element -> BOOLEAN
+rule 10   terminal_element -> QUOTE terminal_element
+rule 11   number -> INTEGER
+rule 12   number -> FLOAT
+rule 13   number -> RATIONAL
+rule 14   number -> IDENTIFIER
+rule 15   number -> CHARACTER
 
 Terminals, with rules where they appear
 
 $ (-1)
 error (256)
-NUM (258) 3
-STRING (259) 4
+INTEGER (258) 11
+FLOAT (259) 12
+RATIONAL (260) 13
+IDENTIFIER (261) 14
+STRING (262) 8
+BOOLEAN (263) 9
+CHARACTER (264) 15
+OPENPAREN (265) 1 2
+CLOSEDPAREN (266) 1 2
+QUOTE (267) 10
 
 Nonterminals, with rules where they appear
 
-statement_list (5)
-    on left: 1 2, on right: 2
-statement (6)
-    on left: 3 4, on right: 1 2
+list (13)
+    on left: 1 2, on right: 2 6
+list_elements (14)
+    on left: 3 4, on right: 1 4
+list_element (15)
+    on left: 5 6, on right: 3 4
+terminal_element (16)
+    on left: 7 8 9 10, on right: 5 10
+number (17)
+    on left: 11 12 13 14 15, on right: 7
 
 
 state 0
 
-    NUM 	shift, and go to state 1
-    STRING	shift, and go to state 2
+    OPENPAREN	shift, and go to state 1
 
-    statement_list	go to state 3
-    statement	go to state 4
+    list	go to state 20
 
 
 
 state 1
 
-    statement  ->  NUM .   (rule 3)
+    list  ->  OPENPAREN . list_elements CLOSEDPAREN   (rule 1)
+    list  ->  OPENPAREN . list CLOSEDPAREN   (rule 2)
 
-    $default	reduce using rule 3 (statement)
+    INTEGER	shift, and go to state 2
+    FLOAT	shift, and go to state 3
+    RATIONAL	shift, and go to state 4
+    IDENTIFIER	shift, and go to state 5
+    STRING	shift, and go to state 6
+    BOOLEAN	shift, and go to state 7
+    CHARACTER	shift, and go to state 8
+    OPENPAREN	shift, and go to state 1
+    QUOTE	shift, and go to state 9
+
+    list	go to state 10
+    list_elements	go to state 11
+    list_element	go to state 12
+    terminal_element	go to state 13
+    number	go to state 14
 
 
 
 state 2
 
-    statement  ->  STRING .   (rule 4)
+    number  ->  INTEGER .   (rule 11)
 
-    $default	reduce using rule 4 (statement)
+    $default	reduce using rule 11 (number)
 
 
 
 state 3
 
-    statement_list  ->  statement_list . statement   (rule 2)
+    number  ->  FLOAT .   (rule 12)
 
-    $   	go to state 6
-    NUM 	shift, and go to state 1
-    STRING	shift, and go to state 2
-
-    statement	go to state 5
+    $default	reduce using rule 12 (number)
 
 
 
 state 4
 
-    statement_list  ->  statement .   (rule 1)
+    number  ->  RATIONAL .   (rule 13)
 
-    $default	reduce using rule 1 (statement_list)
+    $default	reduce using rule 13 (number)
 
 
 
 state 5
 
-    statement_list  ->  statement_list statement .   (rule 2)
+    number  ->  IDENTIFIER .   (rule 14)
 
-    $default	reduce using rule 2 (statement_list)
+    $default	reduce using rule 14 (number)
 
 
 
 state 6
 
-    $   	go to state 7
+    terminal_element  ->  STRING .   (rule 8)
+
+    $default	reduce using rule 8 (terminal_element)
 
 
 
 state 7
+
+    terminal_element  ->  BOOLEAN .   (rule 9)
+
+    $default	reduce using rule 9 (terminal_element)
+
+
+
+state 8
+
+    number  ->  CHARACTER .   (rule 15)
+
+    $default	reduce using rule 15 (number)
+
+
+
+state 9
+
+    terminal_element  ->  QUOTE . terminal_element   (rule 10)
+
+    INTEGER	shift, and go to state 2
+    FLOAT	shift, and go to state 3
+    RATIONAL	shift, and go to state 4
+    IDENTIFIER	shift, and go to state 5
+    STRING	shift, and go to state 6
+    BOOLEAN	shift, and go to state 7
+    CHARACTER	shift, and go to state 8
+    QUOTE	shift, and go to state 9
+
+    terminal_element	go to state 15
+    number	go to state 14
+
+
+
+state 10
+
+    list  ->  OPENPAREN list . CLOSEDPAREN   (rule 2)
+    list_element  ->  list .   (rule 6)
+
+    CLOSEDPAREN	shift, and go to state 16
+
+    CLOSEDPAREN	[reduce using rule 6 (list_element)]
+    $default	reduce using rule 6 (list_element)
+
+
+
+state 11
+
+    list  ->  OPENPAREN list_elements . CLOSEDPAREN   (rule 1)
+    list_elements  ->  list_elements . list_element   (rule 4)
+
+    INTEGER	shift, and go to state 2
+    FLOAT	shift, and go to state 3
+    RATIONAL	shift, and go to state 4
+    IDENTIFIER	shift, and go to state 5
+    STRING	shift, and go to state 6
+    BOOLEAN	shift, and go to state 7
+    CHARACTER	shift, and go to state 8
+    OPENPAREN	shift, and go to state 1
+    CLOSEDPAREN	shift, and go to state 17
+    QUOTE	shift, and go to state 9
+
+    list	go to state 18
+    list_element	go to state 19
+    terminal_element	go to state 13
+    number	go to state 14
+
+
+
+state 12
+
+    list_elements  ->  list_element .   (rule 3)
+
+    $default	reduce using rule 3 (list_elements)
+
+
+
+state 13
+
+    list_element  ->  terminal_element .   (rule 5)
+
+    $default	reduce using rule 5 (list_element)
+
+
+
+state 14
+
+    terminal_element  ->  number .   (rule 7)
+
+    $default	reduce using rule 7 (terminal_element)
+
+
+
+state 15
+
+    terminal_element  ->  QUOTE terminal_element .   (rule 10)
+
+    $default	reduce using rule 10 (terminal_element)
+
+
+
+state 16
+
+    list  ->  OPENPAREN list CLOSEDPAREN .   (rule 2)
+
+    $default	reduce using rule 2 (list)
+
+
+
+state 17
+
+    list  ->  OPENPAREN list_elements CLOSEDPAREN .   (rule 1)
+
+    $default	reduce using rule 1 (list)
+
+
+
+state 18
+
+    list_element  ->  list .   (rule 6)
+
+    $default	reduce using rule 6 (list_element)
+
+
+
+state 19
+
+    list_elements  ->  list_elements list_element .   (rule 4)
+
+    $default	reduce using rule 4 (list_elements)
+
+
+
+state 20
+
+    $   	go to state 21
+
+
+
+state 21
+
+    $   	go to state 22
+
+
+
+state 22
 
     $default	accept

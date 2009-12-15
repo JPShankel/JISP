@@ -30,6 +30,10 @@ extern int jisp_parse_line;
 "#\\space" {if (in_comment) REJECT;yylval = AddToken(yytext);return CHARACTER;}
 "#\\delete" {if (in_comment) REJECT;yylval = AddToken(yytext);return CHARACTER;}
 
+[(] {if (in_comment) REJECT;yylval = AddToken(yytext);return OPENPAREN;}
+[)] {if (in_comment) REJECT;yylval = AddToken(yytext);return CLOSEDPAREN;}
+['] {if (in_comment) REJECT;yylval = AddToken(yytext);return QUOTE;}
+
 [#][\\][A-Za-z0-9_!@#$%^&*()\-+={}\\|\[\]\?><,./;:'] {if (in_comment) REJECT;yylval = AddToken(yytext);return CHARACTER;}
 
 [0-9]+ {if (in_comment) REJECT;yylval = AddToken(yytext);return INTEGER; }

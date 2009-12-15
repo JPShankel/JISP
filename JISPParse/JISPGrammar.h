@@ -8,6 +8,9 @@
 #define	STRING	262
 #define	BOOLEAN	263
 #define	CHARACTER	264
+#define	OPENPAREN	265
+#define	CLOSEDPAREN	266
+#define	QUOTE	267
 
 
 extern YYSTYPE yylval;
