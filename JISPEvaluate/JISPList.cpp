@@ -7,46 +7,85 @@
 */
 
 #include "JISPList.h"
+#include <string>
 
 
 
 namespace JISP
 {
 
+
     bool JISPListElementUnitTest()
     {
         std::string testString;
-        JISPListElement_t testElement1,testElement2,testElement3;
+        bool ret = true;
+        JISPListElement_t element1,element2,element3;
         int deadbeef[] = {0,0,0,0,0,0};
-        JISP::CreateListElement(jleTypeString_k,"\"string1\"",(unsigned int)strlen("\"string1\"")+1,&testElement1);
-        JISP::CreateListElement(jleTypeString_k,"\"string2\"",(unsigned int)strlen("\"string2\"")+1,&testElement2);
 
-        JISP::ListElementToString(&testElement1,&testString);
-        JISP::ListElementToString(&testElement2,&testString);
+        // element1 = "string1", element2 = "string2"
+        JISP::CreateListElement(jleTypeString_k,"\"string1\"",(unsigned int)strlen("\"string1\"")+1,&element1);
+        JISP::CreateListElement(jleTypeString_k,"\"string2\"",(unsigned int)strlen("\"string2\"")+1,&element2);
 
-        JISP::ConstructList(&testElement1,&testElement2,&testElement3);
-        JISP::ListElementToString(&testElement3,&testString);
+        JISP::ListElementToStringVerbose(&element1,&testString);
+        ret = ret && (testString == "\"string1\"");
+        JISP::ListElementToStringVerbose(&element2,&testString);
+        ret = ret && (testString == "\"string2\"");
 
-        JISP::CreateListElement(jleTypeList_k,&testElement2[0],testElement2.size(),&testElement3);
-        std::string testString2;
-        JISP::ListElementToString(&testElement3,&testString2);
+        JISP::ListElementToStringConcise(&element1,&testString);
+        ret = ret && (testString == "\"string1\"");
+        JISP::ListElementToStringConcise(&element2,&testString);
+        ret = ret && (testString == "\"string2\"");
 
-        JISP::ConstructList(&testElement3,&testElement1,&testElement2);
-        JISP::ListElementToString(&testElement2,&testString);
 
-        JISP::ConstructList(&testElement1,&testElement3,&testElement2);
-        JISP::ListElementToString(&testElement2,&testString);
+        // (cons "string1" "string2") = ("string1" . "string2")
+        JISP::JISPCons(&element1,&element2,&element3);
 
-        JISP::CreateListElement(jleTypeString_k,"\"string3\"",(unsigned int)strlen("\"string3\"")+1,&testElement3);
-        JISP::ConstructList(&testElement2,&testElement3,&testElement1);
-        JISP::ListElementToString(&testElement1,&testString2);
+        JISP::ListElementToStringVerbose(&element3,&testString);
+        ret = ret && (testString == "(\"string1\" . \"string2\")");
+        JISP::ListElementToStringConcise(&element3,&testString);
+        ret = ret && (testString == "(\"string1\" . \"string2\")");
 
-        JISP::ConstructList(&testElement3,&testElement2,&testElement1);
-        JISP::ListElementToString(&testElement1,&testString);
+        //(list "string2") = ("string2")
+        JISP::CreateListElement(jleTypeList_k,&element2[0],element2.size(),&element3);
 
-        testString = testString;
+        JISP::ListElementToStringVerbose(&element3,&testString);
+        ret = ret && (testString == "(\"string2\" . ())");
+        JISP::ListElementToStringConcise(&element3,&testString);
+        ret = ret && (testString == "(\"string2\")");
 
-        return true;
+        // (cons ("string1") "string2")) = (("string1") . "string2")
+        JISP::JISPCons(&element3,&element1,&element2);
+
+        JISP::ListElementToStringVerbose(&element2,&testString);
+        ret = ret && (testString == "((\"string2\" . ()) . \"string1\")");
+        JISP::ListElementToStringConcise(&element2,&testString);
+        ret = ret && (testString == "((\"string2\") . \"string1\")");
+
+        // (cons "string1" ("string2")) = ("string1" "string2")
+        JISP::JISPCons(&element1,&element3,&element2);
+        
+        JISP::ListElementToStringVerbose(&element2,&testString);
+        ret = ret && (testString == "(\"string1\" . (\"string2\" . ()))");
+        JISP::ListElementToStringConcise(&element2,&testString);
+        ret = ret && (testString == "(\"string1\" \"string2\")");
+
+        //(cons ("string1" "string2") "string3")) = (("string1")("string2") . "string3")
+        JISP::CreateListElement(jleTypeString_k,"\"string3\"",(unsigned int)strlen("\"string3\"")+1,&element3);
+        JISP::JISPCons(&element2,&element3,&element1);
+
+        JISP::ListElementToStringVerbose(&element1,&testString);
+        ret = ret && (testString == "((\"string1\" . (\"string2\" . ())) . \"string3\")");
+        JISP::ListElementToStringConcise(&element1,&testString);
+        ret = ret && (testString == "((\"string1\" \"string2\") . \"string3\")");
+
+        //(cons "string3" ("string1" "string2")) = ("string3" "string1" "string2")
+        JISP::JISPCons(&element3,&element2,&element1);
+
+        JISP::ListElementToStringConcise(&element1,&testString);
+        ret = ret && (testString == "(\"string3\" \"string1\" \"string2\")");
+
+
+        return ret;
     }
 
 
@@ -94,7 +133,7 @@ namespace JISP
     }
 
 
-    bool ConstructList(const JISPListElement_t *car,const JISPListElement_t *cdr,JISPListElement_t *output)
+    bool JISPCons(const JISPListElement_t *car,const JISPListElement_t *cdr,JISPListElement_t *output)
     {
         CreateListElement(jleTypeList_k,(const char *)&(*car)[0],car->size(),output);
         output->resize(output->size()+cdr->size());
@@ -106,7 +145,20 @@ namespace JISP
         return true;
     }
 
-    void ListElementToStringRecurse(const JISPListElementIterator_t *jle,std::string *str)
+    bool JISPCAR(const JISPListElement_t *jle,JISPListElement_t *output)
+    {
+        const JISPListElementIterator_t *jleIterator = IteratorFromListElement(jle);
+        (*output).clear();
+        return true;
+    }
+
+    bool JISPCDR(const JISPListElement_t *jle,JISPListElement_t *output)
+    {
+        return true;
+    }
+
+
+    void ListElementToStringVerboseRecurse(const JISPListElementIterator_t *jle,std::string *str)
     {
         if (jle->type_ == jleTypeList_k)
         {
@@ -114,29 +166,100 @@ namespace JISP
             if (jle->carLen_ > 0)
             {
                 const JISPListElementIterator_t *jleComponent = reinterpret_cast<const JISPListElementIterator_t*>(static_cast<const void*>(&jle->data_[0]));
-                ListElementToStringRecurse(jleComponent,str);
+                ListElementToStringVerboseRecurse(jleComponent,str);
             }
             if (jle->cdrLen_ > 0)
             {
                 const JISPListElementIterator_t *jleComponent = reinterpret_cast<const JISPListElementIterator_t*>(static_cast<const void*>(&jle->data_[jle->carLen_]));
-                (*str) += ".";
-                ListElementToStringRecurse(jleComponent,str);
+                (*str) += " . ";
+                ListElementToStringVerboseRecurse(jleComponent,str);
+            }
+            if ( (*str)[(*str).length()-1] == ' ')
+            {
+                (*str) = (*str).substr(0,(*str).length()-1);
             }
             (*str) += ")";
         }
         else
         {
             (*str) += (const char *)jle->data_;
-            (*str) += " ";
         }
     }
-    
-    bool ListElementToString(const JISPListElement_t *jle,std::string *str)
+
+        void ListElementToStringConciseRecurse(const JISPListElementIterator_t *jle,std::string *str,bool car)
     {
-        str->clear();
+        if (jle->type_ == jleTypeList_k)
+        {
+            if (car)
+            {
+                (*str) += "(";
+            }
+            
+            if (jle->carLen_ > 0)
+            {
+                const JISPListElementIterator_t *jleComponent = reinterpret_cast<const JISPListElementIterator_t*>(static_cast<const void*>(&jle->data_[0]));
+                ListElementToStringConciseRecurse(jleComponent,str,true);
+            }
+            if (jle->cdrLen_ > 0)
+            {
+                const JISPListElementIterator_t *jleComponent = reinterpret_cast<const JISPListElementIterator_t*>(static_cast<const void*>(&jle->data_[jle->carLen_]));
+                ListElementToStringConciseRecurse(jleComponent,str,false);
+            }
+            if (car)
+            {
+                if ( (*str)[(*str).length()-1] == ' ')
+                {
+                    (*str) = (*str).substr(0,(*str).length()-1);
+                }
+                (*str) += ")";
+            }
+        }
+        else
+        {
+            if (!car)
+            {
+                (*str) += " . ";
+            }
+            if ( !(*str).empty())
+            {
+                if ( (*str)[(*str).length()-1] != ' ' && (*str)[(*str).length()-1] != '(')
+                {
+                    (*str) += " ";
+                }
+            }
+            (*str) += (const char *)jle->data_;
+        }
+    }
+
+    
+    bool ListElementToStringConcise(const JISPListElement_t *jle,std::string *str)
+    {
+        (*str) = "";
         const JISPListElementIterator_t *jleIterator = IteratorFromListElement(jle);
-        ListElementToStringRecurse(jleIterator,str);
+        ListElementToStringConciseRecurse(jleIterator,str,true);
+
+        if ( (*str)[(*str).length()-1] == ' ')
+        {
+            (*str) = (*str).substr(0,(*str).length()-1);
+        }
+
         return true;
     }
+
+    bool ListElementToStringVerbose(const JISPListElement_t *jle,std::string *str)
+    {
+        (*str) = "";
+        const JISPListElementIterator_t *jleIterator = IteratorFromListElement(jle);
+        ListElementToStringVerboseRecurse(jleIterator,str);
+
+        if ( (*str)[(*str).length()-1] == ' ')
+        {
+            (*str) = (*str).substr(0,(*str).length()-1);
+        }
+
+
+        return true;
+    }
+
 
 }
