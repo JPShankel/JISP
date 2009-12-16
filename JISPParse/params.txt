@@ -1,0 +1,2 @@
+..\..\Tools\flex\bin\flex -l -o..\..\JISPParse\JISPLexer.c ..\..\JISPParse\JISPLexer.l
+..\..\Tools\bison\bin\BISON ..\..\JISPParse\JISPGrammar.y --output=..\..\JISPParse\JISPGrammar.c -d -v
