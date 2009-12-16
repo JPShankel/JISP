@@ -2,9 +2,12 @@
 #include <iostream>
 #include <string>
 #include "..\..\JISPParse\JISPCompile.h"
+#include "..\..\JISPEvaluate\JISPList.h"
  
 int main(int argc,char **argv)
 {
+
+    JISP::JISPListElementUnitTest();
   
     std::string str;
     std::cout << ">";

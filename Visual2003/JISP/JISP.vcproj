@@ -118,12 +118,18 @@
 				Name="Source"
 				Filter="">
 				<File
+					RelativePath="..\..\JISPEvaluate\JISPList.cpp">
+				</File>
+				<File
 					RelativePath="..\..\JISPEvaluate\JISPStackMachine.cpp">
 				</File>
 			</Filter>
 			<Filter
 				Name="Headers"
 				Filter="">
+				<File
+					RelativePath="..\..\JISPEvaluate\JISPList.h">
+				</File>
 				<File
 					RelativePath="..\..\JISPEvaluate\JISPStackMachine.h">
 				</File>
@@ -132,6 +138,9 @@
 		<Filter
 			Name="JISPConsole"
 			Filter="">
+			<File
+				RelativePath=".\JISP.cpp">
+			</File>
 			<Filter
 				Name="Header Files"
 				Filter="h;hpp;hxx;hm;inl;inc;xsd"
@@ -144,9 +153,6 @@
 				Name="Source Files"
 				Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 				UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
-				<File
-					RelativePath=".\JISP.cpp">
-				</File>
 				<File
 					RelativePath=".\stdafx.cpp">
 					<FileConfiguration
