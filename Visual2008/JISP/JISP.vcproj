@@ -184,20 +184,12 @@
 					RelativePath="..\..\JISPEvaluate\JISPList.cpp"
 					>
 				</File>
-				<File
-					RelativePath="..\..\JISPEvaluate\JISPStackMachine.cpp"
-					>
-				</File>
 			</Filter>
 			<Filter
 				Name="Headers"
 				>
 				<File
 					RelativePath="..\..\JISPEvaluate\JISPList.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\JISPEvaluate\JISPStackMachine.h"
 					>
 				</File>
 			</Filter>
@@ -273,7 +265,7 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						CommandLine="..\..\Tools\bison\bin\BISON ..\..\JISPParse\JISPGrammar.y --output=..\..\JISPParse\JISPGrammar.c -d -v"
+						CommandLine="..\..\Tools\bison\bin\BISON ..\..\JISPParse\JISPGrammar.y --output=..\..\JISPParse\JISPGrammar.c -d -v&#x0D;&#x0A;"
 						Outputs="$(InputName).c,$(InputName).h"
 					/>
 				</FileConfiguration>
@@ -290,7 +282,7 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						CommandLine="..\..\Tools\flex\bin\flex -l -o..\..\JISPParse\JISPLexer.c ..\..\JISPParse\JISPLexer.l"
+						CommandLine="..\..\Tools\flex\bin\flex -l -o..\..\JISPParse\JISPLexer.c ..\..\JISPParse\JISPLexer.l&#x0D;&#x0A;"
 						Outputs="$(InputName).c"
 					/>
 				</FileConfiguration>
