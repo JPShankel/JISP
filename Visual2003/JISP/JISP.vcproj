@@ -120,9 +120,6 @@
 				<File
 					RelativePath="..\..\JISPEvaluate\JISPList.cpp">
 				</File>
-				<File
-					RelativePath="..\..\JISPEvaluate\JISPStackMachine.cpp">
-				</File>
 			</Filter>
 			<Filter
 				Name="Headers"
@@ -130,17 +127,11 @@
 				<File
 					RelativePath="..\..\JISPEvaluate\JISPList.h">
 				</File>
-				<File
-					RelativePath="..\..\JISPEvaluate\JISPStackMachine.h">
-				</File>
 			</Filter>
 		</Filter>
 		<Filter
 			Name="JISPConsole"
 			Filter="">
-			<File
-				RelativePath=".\JISP.cpp">
-			</File>
 			<Filter
 				Name="Header Files"
 				Filter="h;hpp;hxx;hm;inl;inc;xsd"
@@ -153,6 +144,21 @@
 				Name="Source Files"
 				Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 				UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
+				<File
+					RelativePath="..\..\JISPConsole\JISP.cpp">
+					<FileConfiguration
+						Name="Debug|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32">
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)/$(InputName)1.obj"/>
+					</FileConfiguration>
+				</File>
 				<File
 					RelativePath=".\stdafx.cpp">
 					<FileConfiguration
@@ -191,7 +197,7 @@
 					Name="Debug|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
-						CommandLine="C:\projects\JISP\JISPParse\BuildYacc $(InputName)
+						CommandLine="..\..\Tools\bison\bin\BISON ..\..\JISPParse\JISPGrammar.y --output=..\..\JISPParse\JISPGrammar.c -d -v
 "
 						Outputs="$(InputName).c,$(InputName).h"/>
 				</FileConfiguration>
@@ -205,7 +211,7 @@
 					Name="Debug|Win32">
 					<Tool
 						Name="VCCustomBuildTool"
-						CommandLine="C:\projects\JISP\JISPParse\BuildLex $(InputName)
+						CommandLine="..\..\Tools\flex\bin\flex -l -o..\..\JISPParse\JISPLexer.c ..\..\JISPParse\JISPLexer.l
 "
 						Outputs="$(InputName).c"/>
 				</FileConfiguration>

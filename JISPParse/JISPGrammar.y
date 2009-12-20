@@ -10,7 +10,20 @@ int jisp_parse_line;
 extern int jisp_lex_line;
 
 const char *GetToken(unsigned int index);
+unsigned int AddJISPElement(unsigned int type, unsigned int dataIndex);
+unsigned int AddJISPElementToList(unsigned int elist, unsigned int element);
+unsigned int BeginJISPElementList(unsigned int element);
 
+const int jleTypeCharacter_k = 0;
+const int jleTypeString_k= 1;
+const int jleTypeInteger_k= 2;
+const int jleTypeFloat_k= 3;
+const int jleTypeComplex_k= 4;
+const int jleTypeQuoted_k= 5;
+const int jleTypeBoolean_k= 6;
+const int jleTypeRational_k= 7;
+const int jleTypeIdentifier_k= 8;
+const int jleTypeList_k=9;
 
 %}
 
@@ -32,29 +45,28 @@ const char *GetToken(unsigned int index);
 
 %%
 
-list: OPENPAREN list_elements CLOSEDPAREN {$$=$2;printf("list %s\n",GetToken($2));}
-| OPENPAREN list CLOSEDPAREN {$$=$2;printf("list %s\n",GetToken($2));}
+list: OPENPAREN list_elements CLOSEDPAREN {$$=EndJISPElementList($2);}
 ;
 
-list_elements : list_element {$$=$1;printf("list element: %s\n",GetToken($1));}
-| list_elements list_element {$$=$2;printf("list elements: %s\n",GetToken($1));}
+list_elements : list_element {$$=BeginJISPElementList($1);}
+| list_elements list_element {$$=AddJISPElementToList($1,$2);}
 ;
 
-list_element : terminal_element {$$=$1;printf("terminal element: %s\n",GetToken($1));}
-| list {$$=$1;printf("list in list element: %s\n",GetToken($1));}
+list_element : terminal_element {$$=$1;}
+| list {$$=$1;}
 ;
 
-terminal_element : number {$$=$1;printf("number %s\n",GetToken($1));}
-| STRING {$$=$1;printf("string: %s\n",GetToken($1));}
-| BOOLEAN {$$=$1;printf("bool: %s\n",GetToken($1));}
-| QUOTE terminal_element {$$=$1;printf("quoted %s\n",GetToken($2));}
+terminal_element : number {$$=$1;}
+| STRING {$$=AddJISPElement(jleTypeString_k,$1);}
+| BOOLEAN {$$=AddJISPElement(jleTypeBoolean_k,$1);}
+| QUOTE terminal_element {AddJISPElement(jleTypeQuoted_k,$2);}
 ;
 
-number: INTEGER {$$=$1;printf("integer: %s\n",GetToken($1));}
-| FLOAT {$$=$1;printf("float: %s\n",GetToken($1));}
-| RATIONAL {$$=$1;printf("fraction: %s\n",GetToken($1));}
-| IDENTIFIER {$$=$1;printf("identifier: %s\n",GetToken($1));}
-| CHARACTER {$$=$1;printf("character: %s\n",GetToken($1));}
+number: INTEGER {$$=AddJISPElement(jleTypeInteger_k,$1);}
+| FLOAT {$$=AddJISPElement(jleTypeFloat_k,$1);}
+| RATIONAL {$$=AddJISPElement(jleTypeRational_k,$1);}
+| IDENTIFIER {$$=AddJISPElement(jleTypeIdentifier_k,$1);}
+| CHARACTER {$$=AddJISPElement(jleTypeCharacter_k,$1);}
 ;
 
 

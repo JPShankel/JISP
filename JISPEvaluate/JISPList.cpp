@@ -117,6 +117,32 @@ namespace JISP
         JISP::ListElementToStringConcise(&element1,&testString);
         ret = ret && (testString == "(\"string3\" \"string1\" \"string2\")");
 
+        std::string freshString;
+        JISP::StringToListElement("(A)",&element1);
+        JISP::ListElementToStringVerbose(&element1,&freshString);
+        ret = ret && (freshString == "(A . ())");
+
+        JISP::StringToListElement("(A B)",&element1);
+        JISP::ListElementToStringVerbose(&element1,&freshString);
+        ret = ret && (freshString == "(A . (B . ()))");
+
+        JISP::StringToListElement("((A) B)",&element1);
+        JISP::ListElementToStringVerbose(&element1,&freshString);
+        ret = ret && (freshString == "((A . ()) . (B . ()))");
+
+        JISP::StringToListElement("(A (B))",&element1);
+        JISP::ListElementToStringVerbose(&element1,&freshString);
+        ret = ret && (freshString == "(A . ((B . ()) . ()))");
+        
+        JISP::StringToListElement("(A (B) (C D) E F (G (H I) J))",&element1);
+        JISP::ListElementToStringConcise(&element1,&freshString);
+        ret = ret && (freshString == "(A (B) (C D) E F (G (H I) J))");
+
+        JISP::StringToListElement("(((((A)B)C)D)E)",&element1);
+        JISP::ListElementToStringVerbose(&element1,&freshString);
+        ret = ret && (freshString == "(((((A . ()) . (B . ())) . (C . ())) . (D . ())) . (E . ()))");
+        JISP::ListElementToStringConcise(&element1,&freshString);
+        ret = ret && (freshString == "(((((A) B) C) D) E)");
 
         return ret;
     }
@@ -246,7 +272,14 @@ namespace JISP
         {
             if (car)
             {
-                (*str) += "(";
+                if (!(*str).empty() && (*str)[(*str).length()-1] != '(')
+                {
+                    (*str) +=" (";
+                }
+                else
+                {
+                    (*str) += "(";
+                    }
             }
             
             if (jle->carLen_ > 0)

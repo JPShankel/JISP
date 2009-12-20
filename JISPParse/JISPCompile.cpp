@@ -7,6 +7,7 @@
 */
 
 #include "JISPCompile.h"
+#include "..\JISPEvaluate\JISPList.h"
 
 #include <stdio.h>
 #include <string>
@@ -17,10 +18,12 @@
 #include <string>
 
 static std::vector<std::string> compilerStrings_s;
+static JISP::JISPListElementVector_t listElements_s;
+static std::vector<std::vector<int> > elementListLists_s;
 
 extern "C"
 {
-    int AddToken(const char *token)
+    unsigned int AddToken(const char *token)
     {
         compilerStrings_s.push_back(token);
         return static_cast<int>(compilerStrings_s.size()-1);
@@ -30,6 +33,55 @@ extern "C"
     {
         return compilerStrings_s[index].c_str();
     }
+
+    unsigned int AddJISPElementToList(unsigned int elist, unsigned int element)
+    {
+        elementListLists_s[elist].push_back(element);
+        return elist;
+    }
+
+    unsigned int EndJISPElementList(unsigned int elist)
+    {
+        std::vector<int> &elementList = elementListLists_s[elist];
+
+        JISP::JISPListElement_t newList;
+        JISP::CreateListElement(JISP::jleTypeList_k,&listElements_s[elementList.back()][0],listElements_s[elementList.back()].size(),&newList);
+
+        for (int i=(int)elementList.size()-2;i>=0;--i)
+        {
+            JISP::JISPCons(&listElements_s[elementList[i]],&newList,&newList);
+        }
+
+        listElements_s.push_back(newList);
+        return static_cast<int>(listElements_s.size()-1);
+    }
+
+    unsigned int BeginJISPElementList(unsigned int element)
+    {
+        elementListLists_s.push_back(std::vector<int>());
+        elementListLists_s.back().push_back(element);
+        return static_cast<int>(elementListLists_s.size()-1);
+    }
+
+    unsigned int AddJISPElement(unsigned int type, unsigned int dataIndex)
+    {
+        if (type == JISP::jleTypeList_k || type == JISP::jleTypeQuoted_k)
+        {
+            JISP::JISPListElement_t jle;
+            JISP::CreateListElement((JISP::JISPListElementTypes_t)type,&listElements_s[dataIndex][0],listElements_s[dataIndex].size(),&jle);
+            listElements_s.push_back(jle);
+            return static_cast<int>(listElements_s.size()-1);
+        }
+        else
+        {
+            JISP::JISPListElement_t jle;
+            std::string &str = compilerStrings_s[dataIndex];
+            JISP::CreateListElement((JISP::JISPListElementTypes_t)type,str.c_str(),str.size()+1,&jle);
+            listElements_s.push_back(jle);
+            return static_cast<int>(listElements_s.size()-1);
+        }
+    }
+
 
     void compile(const char *data);
 
@@ -41,8 +93,26 @@ extern "C"
 
 namespace JISP
 {
+    bool StringToListElement(const char *str,JISPListElement_t *jle)
+    {
+        CompileString(str);
+
+        std::string teststr,teststr2;
+        
+        if (!listElements_s.empty())
+        {
+            (*jle) = listElements_s.back();
+        }
+        ListElementToStringVerbose(jle,&teststr);
+        ListElementToStringConcise(jle,&teststr2);    
+        return true;
+    }
+
+
     bool CompileString(const char *data)
     {
+        compilerStrings_s.clear();
+        listElements_s.clear();
         compile(data);
         return true;
     }
@@ -59,6 +129,8 @@ namespace JISP
             char *data = new char[len+1];
             fread(fp,1,len,fp);
             fclose(fp);
+            compilerStrings_s.clear();
+            listElements_s.clear();
             compile(data);
             delete[] data;
             return true;

@@ -14,6 +14,7 @@
 namespace JISP
 {
     typedef std::vector<unsigned char> JISPListElement_t;
+    typedef std::vector<JISPListElement_t> JISPListElementVector_t;
 
     enum JISPListElementTypes_t 
     {
@@ -22,6 +23,10 @@ namespace JISP
      jleTypeInteger_k,
      jleTypeFloat_k,
      jleTypeComplex_k,
+     jleTypeQuoted_k,
+     jleTypeBoolean_k,
+     jleTypeRational_k,
+     jleTypeIdentifier_k,
      jleTypeList_k
     };
 

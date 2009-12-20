@@ -6,7 +6,7 @@
 #pragma warning (disable:4129) //unrecognized escape sequence in bison code
 
 int YYInput(char *buf,int max_size);
-int AddToken(const char *token);
+unsigned int AddToken(const char *token);
 int in_comment = 0,jisp_lex_line=0;
 extern int jisp_parse_line;
 #undef YY_INPUT
