@@ -82,6 +82,10 @@ extern "C"
         }
     }
 
+    unsigned int AddQuotedElement(unsigned int type, unsigned int dataIndex)
+    {
+        return AddJISPElement(type,dataIndex);
+    }
 
     void compile(const char *data);
 
@@ -97,14 +101,10 @@ namespace JISP
     {
         CompileString(str);
 
-        std::string teststr,teststr2;
-        
         if (!listElements_s.empty())
         {
             (*jle) = listElements_s.back();
         }
-        ListElementToStringVerbose(jle,&teststr);
-        ListElementToStringConcise(jle,&teststr2);    
         return true;
     }
 

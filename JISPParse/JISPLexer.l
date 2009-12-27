@@ -75,7 +75,7 @@ void compile(const char *str)
 	in_comment = 0;
 	jisp_lex_line = 0;
 	jisp_parse_line = -1;
-	inputStream = str;
+	inputStream = (char *)str;
 	yyrestart(0);
 	yyparse();
 }
