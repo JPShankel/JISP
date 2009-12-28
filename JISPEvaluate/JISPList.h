@@ -30,13 +30,19 @@ namespace JISP
      jleTypeList_k
     };
 
+    bool JISPCons(const JISPListElement_t *car,const JISPListElement_t *cdr,JISPListElement_t *output);
+    bool JISPCAR(const JISPListElement_t *jle,JISPListElement_t *output);
+    bool JISPCDR(const JISPListElement_t *jle,JISPListElement_t *output);
+
+
     bool CreateListElement(JISPListElementTypes_t type,const void *data,unsigned int dataLength,JISPListElement_t *jlw);
     bool ListElementToStringConcise(const JISPListElement_t *jle,std::string *str);
     bool ListElementToStringVerbose(const JISPListElement_t *jle,std::string *str);
     bool StringToListElement(const char *str,JISPListElement_t *jle);
-    bool JISPCons(const JISPListElement_t *car,const JISPListElement_t *cdr,JISPListElement_t *output);
-    bool JISPCAR(const JISPListElement_t *jle,JISPListElement_t *output);
-    bool JISPCDR(const JISPListElement_t *jle,JISPListElement_t *output);
+
+    bool EvaluateListElement(const JISPListElement_t *input,JISPListElement_t *output);
+
+    void InitJISPSystem();
 
     bool JISPListElementUnitTest();
 }
