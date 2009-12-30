@@ -1,235 +1,270 @@
 Grammar
 
-    0 $accept: list $end
+    0 $accept: statement $end
 
-    1 list: OPENPAREN list_elements CLOSEDPAREN
+    1 statement: list
+    2          | QUOTE statement
 
-    2 list_elements: list_element
-    3              | list_elements list_element
+    3 list: OPENPAREN list_elements CLOSEDPAREN
 
-    4 list_element: terminal_element
-    5             | list
+    4 list_elements: list_element
+    5              | list_elements list_element
 
-    6 terminal_element: number
-    7                 | STRING
-    8                 | BOOLEAN
-    9                 | QUOTE terminal_element
+    6 list_element: terminal_element
+    7             | list
+    8             | QUOTE list_element
 
-   10 number: INTEGER
-   11       | FLOAT
-   12       | RATIONAL
-   13       | IDENTIFIER
-   14       | CHARACTER
+    9 terminal_element: number
+   10                 | STRING
+   11                 | BOOLEAN
+   12                 | IDENTIFIER
+
+   13 number: INTEGER
+   14       | FLOAT
+   15       | RATIONAL
+   16       | CHARACTER
 
 
 Terminals, with rules where they appear
 
 $end (0) 0
 error (256)
-INTEGER (258) 10
-FLOAT (259) 11
-RATIONAL (260) 12
-IDENTIFIER (261) 13
-STRING (262) 7
-BOOLEAN (263) 8
-CHARACTER (264) 14
-OPENPAREN (265) 1
-CLOSEDPAREN (266) 1
-QUOTE (267) 9
+INTEGER (258) 13
+FLOAT (259) 14
+RATIONAL (260) 15
+IDENTIFIER (261) 12
+STRING (262) 10
+BOOLEAN (263) 11
+CHARACTER (264) 16
+OPENPAREN (265) 3
+CLOSEDPAREN (266) 3
+QUOTE (267) 2 8
 
 
 Nonterminals, with rules where they appear
 
 $accept (13)
     on left: 0
-list (14)
-    on left: 1, on right: 0 5
-list_elements (15)
-    on left: 2 3, on right: 1 3
-list_element (16)
-    on left: 4 5, on right: 2 3
-terminal_element (17)
-    on left: 6 7 8 9, on right: 4 9
-number (18)
-    on left: 10 11 12 13 14, on right: 6
+statement (14)
+    on left: 1 2, on right: 0 2
+list (15)
+    on left: 3, on right: 1 7
+list_elements (16)
+    on left: 4 5, on right: 3 5
+list_element (17)
+    on left: 6 7 8, on right: 4 5 8
+terminal_element (18)
+    on left: 9 10 11 12, on right: 6
+number (19)
+    on left: 13 14 15 16, on right: 9
 
 
 state 0
 
-    0 $accept: . list $end
+    0 $accept: . statement $end
 
     OPENPAREN  shift, and go to state 1
+    QUOTE      shift, and go to state 2
 
-    list  go to state 2
+    statement  go to state 3
+    list       go to state 4
 
 
 state 1
 
-    1 list: OPENPAREN . list_elements CLOSEDPAREN
+    3 list: OPENPAREN . list_elements CLOSEDPAREN
 
-    INTEGER     shift, and go to state 3
-    FLOAT       shift, and go to state 4
-    RATIONAL    shift, and go to state 5
-    IDENTIFIER  shift, and go to state 6
-    STRING      shift, and go to state 7
-    BOOLEAN     shift, and go to state 8
-    CHARACTER   shift, and go to state 9
+    INTEGER     shift, and go to state 5
+    FLOAT       shift, and go to state 6
+    RATIONAL    shift, and go to state 7
+    IDENTIFIER  shift, and go to state 8
+    STRING      shift, and go to state 9
+    BOOLEAN     shift, and go to state 10
+    CHARACTER   shift, and go to state 11
     OPENPAREN   shift, and go to state 1
-    QUOTE       shift, and go to state 10
+    QUOTE       shift, and go to state 12
 
-    list              go to state 11
-    list_elements     go to state 12
-    list_element      go to state 13
-    terminal_element  go to state 14
-    number            go to state 15
+    list              go to state 13
+    list_elements     go to state 14
+    list_element      go to state 15
+    terminal_element  go to state 16
+    number            go to state 17
 
 
 state 2
 
-    0 $accept: list . $end
+    2 statement: QUOTE . statement
 
-    $end  shift, and go to state 16
+    OPENPAREN  shift, and go to state 1
+    QUOTE      shift, and go to state 2
+
+    statement  go to state 18
+    list       go to state 4
 
 
 state 3
 
-   10 number: INTEGER .
+    0 $accept: statement . $end
 
-    $default  reduce using rule 10 (number)
+    $end  shift, and go to state 19
 
 
 state 4
 
-   11 number: FLOAT .
+    1 statement: list .
 
-    $default  reduce using rule 11 (number)
+    $default  reduce using rule 1 (statement)
 
 
 state 5
 
-   12 number: RATIONAL .
-
-    $default  reduce using rule 12 (number)
-
-
-state 6
-
-   13 number: IDENTIFIER .
+   13 number: INTEGER .
 
     $default  reduce using rule 13 (number)
 
 
-state 7
+state 6
 
-    7 terminal_element: STRING .
-
-    $default  reduce using rule 7 (terminal_element)
-
-
-state 8
-
-    8 terminal_element: BOOLEAN .
-
-    $default  reduce using rule 8 (terminal_element)
-
-
-state 9
-
-   14 number: CHARACTER .
+   14 number: FLOAT .
 
     $default  reduce using rule 14 (number)
 
 
+state 7
+
+   15 number: RATIONAL .
+
+    $default  reduce using rule 15 (number)
+
+
+state 8
+
+   12 terminal_element: IDENTIFIER .
+
+    $default  reduce using rule 12 (terminal_element)
+
+
+state 9
+
+   10 terminal_element: STRING .
+
+    $default  reduce using rule 10 (terminal_element)
+
+
 state 10
 
-    9 terminal_element: QUOTE . terminal_element
+   11 terminal_element: BOOLEAN .
 
-    INTEGER     shift, and go to state 3
-    FLOAT       shift, and go to state 4
-    RATIONAL    shift, and go to state 5
-    IDENTIFIER  shift, and go to state 6
-    STRING      shift, and go to state 7
-    BOOLEAN     shift, and go to state 8
-    CHARACTER   shift, and go to state 9
-    QUOTE       shift, and go to state 10
-
-    terminal_element  go to state 17
-    number            go to state 15
+    $default  reduce using rule 11 (terminal_element)
 
 
 state 11
 
-    5 list_element: list .
+   16 number: CHARACTER .
 
-    $default  reduce using rule 5 (list_element)
+    $default  reduce using rule 16 (number)
 
 
 state 12
 
-    1 list: OPENPAREN list_elements . CLOSEDPAREN
-    3 list_elements: list_elements . list_element
+    8 list_element: QUOTE . list_element
 
-    INTEGER      shift, and go to state 3
-    FLOAT        shift, and go to state 4
-    RATIONAL     shift, and go to state 5
-    IDENTIFIER   shift, and go to state 6
-    STRING       shift, and go to state 7
-    BOOLEAN      shift, and go to state 8
-    CHARACTER    shift, and go to state 9
-    OPENPAREN    shift, and go to state 1
-    CLOSEDPAREN  shift, and go to state 18
-    QUOTE        shift, and go to state 10
+    INTEGER     shift, and go to state 5
+    FLOAT       shift, and go to state 6
+    RATIONAL    shift, and go to state 7
+    IDENTIFIER  shift, and go to state 8
+    STRING      shift, and go to state 9
+    BOOLEAN     shift, and go to state 10
+    CHARACTER   shift, and go to state 11
+    OPENPAREN   shift, and go to state 1
+    QUOTE       shift, and go to state 12
 
-    list              go to state 11
-    list_element      go to state 19
-    terminal_element  go to state 14
-    number            go to state 15
+    list              go to state 13
+    list_element      go to state 20
+    terminal_element  go to state 16
+    number            go to state 17
 
 
 state 13
 
-    2 list_elements: list_element .
+    7 list_element: list .
 
-    $default  reduce using rule 2 (list_elements)
+    $default  reduce using rule 7 (list_element)
 
 
 state 14
 
-    4 list_element: terminal_element .
+    3 list: OPENPAREN list_elements . CLOSEDPAREN
+    5 list_elements: list_elements . list_element
 
-    $default  reduce using rule 4 (list_element)
+    INTEGER      shift, and go to state 5
+    FLOAT        shift, and go to state 6
+    RATIONAL     shift, and go to state 7
+    IDENTIFIER   shift, and go to state 8
+    STRING       shift, and go to state 9
+    BOOLEAN      shift, and go to state 10
+    CHARACTER    shift, and go to state 11
+    OPENPAREN    shift, and go to state 1
+    CLOSEDPAREN  shift, and go to state 21
+    QUOTE        shift, and go to state 12
+
+    list              go to state 13
+    list_element      go to state 22
+    terminal_element  go to state 16
+    number            go to state 17
 
 
 state 15
 
-    6 terminal_element: number .
+    4 list_elements: list_element .
 
-    $default  reduce using rule 6 (terminal_element)
+    $default  reduce using rule 4 (list_elements)
 
 
 state 16
 
-    0 $accept: list $end .
+    6 list_element: terminal_element .
 
-    $default  accept
+    $default  reduce using rule 6 (list_element)
 
 
 state 17
 
-    9 terminal_element: QUOTE terminal_element .
+    9 terminal_element: number .
 
     $default  reduce using rule 9 (terminal_element)
 
 
 state 18
 
-    1 list: OPENPAREN list_elements CLOSEDPAREN .
+    2 statement: QUOTE statement .
 
-    $default  reduce using rule 1 (list)
+    $default  reduce using rule 2 (statement)
 
 
 state 19
 
-    3 list_elements: list_elements list_element .
+    0 $accept: statement $end .
 
-    $default  reduce using rule 3 (list_elements)
+    $default  accept
+
+
+state 20
+
+    8 list_element: QUOTE list_element .
+
+    $default  reduce using rule 8 (list_element)
+
+
+state 21
+
+    3 list: OPENPAREN list_elements CLOSEDPAREN .
+
+    $default  reduce using rule 3 (list)
+
+
+state 22
+
+    5 list_elements: list_elements list_element .
+
+    $default  reduce using rule 5 (list_elements)

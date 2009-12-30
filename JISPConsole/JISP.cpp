@@ -6,9 +6,8 @@
  
 int main(int argc,char **argv)
 {
-    JISP::InitJISPSystem();
 
-    JISP::JISPListElementUnitTest();
+    JISP::ListElementUnitTest();
   
     std::string str;
     std::cout << ">";

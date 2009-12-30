@@ -13,10 +13,13 @@
 
 namespace JISP
 {
-    typedef std::vector<unsigned char> JISPListElement_t;
-    typedef std::vector<JISPListElement_t> JISPListElementVector_t;
+    typedef std::vector<unsigned char> ListElement_t;
+    typedef std::vector<ListElement_t> ListElementVector_t;
 
-    enum JISPListElementTypes_t 
+    struct JISPContext_t;
+
+
+    enum ListElementTypes_t 
     {
      jleTypeCharacter_k = 0,
      jleTypeString_k,
@@ -27,24 +30,26 @@ namespace JISP
      jleTypeBoolean_k,
      jleTypeRational_k,
      jleTypeIdentifier_k,
-     jleTypeList_k
+     jleTypeList_k,
+     jleTypeUnknown_k
     };
 
-    bool JISPCons(const JISPListElement_t *car,const JISPListElement_t *cdr,JISPListElement_t *output);
-    bool JISPCAR(const JISPListElement_t *jle,JISPListElement_t *output);
-    bool JISPCDR(const JISPListElement_t *jle,JISPListElement_t *output);
+    bool JISPCons(const ListElement_t *car,const ListElement_t *cdr,ListElement_t *output);
+    bool JISPCAR(const ListElement_t *jle,ListElement_t *output);
+    bool JISPCDR(const ListElement_t *jle,ListElement_t *output);
 
 
-    bool CreateListElement(JISPListElementTypes_t type,const void *data,unsigned int dataLength,JISPListElement_t *jlw);
-    bool ListElementToStringConcise(const JISPListElement_t *jle,std::string *str);
-    bool ListElementToStringVerbose(const JISPListElement_t *jle,std::string *str);
-    bool StringToListElement(const char *str,JISPListElement_t *jle);
+    bool CreateListElement(ListElementTypes_t type,const void *data,unsigned int dataLength,ListElement_t *jlw);
+    bool ListElementToStringConcise(const ListElement_t *jle,std::string *str);
+    bool ListElementToStringVerbose(const ListElement_t *jle,std::string *str);
+    bool StringToListElement(const char *str,ListElement_t *jle);
 
-    bool EvaluateListElement(const JISPListElement_t *input,JISPListElement_t *output);
+    bool EvaluateListElement(JISPContext_t *context,const ListElement_t *input,ListElement_t *output);
 
-    void InitJISPSystem();
+    JISPContext_t *CreateJISPContext();
+    void DestroyJISPContext(JISPContext_t *context);
 
-    bool JISPListElementUnitTest();
+    bool ListElementUnitTest();
 }
 
 #endif //JISPLIST_H

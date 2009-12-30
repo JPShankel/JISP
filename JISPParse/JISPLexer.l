@@ -44,7 +44,7 @@ extern int jisp_parse_line;
 
 [.][0-9]+ {if (in_comment) REJECT;yylval = AddToken(yytext);return FLOAT;}
 
-[A-Za-z][A-Za-z0-9_]* {if (in_comment) REJECT;yylval = AddToken(yytext);return IDENTIFIER;}
+[A-Za-z][A-Za-z0-9_\?]* {if (in_comment) REJECT;yylval = AddToken(yytext);return IDENTIFIER;}
 
 [\"][A-Za-z0-9_ !@#$%^&*()\-+={}\\|\[\]\?><,./;:']*[\"] {if (in_comment) REJECT;yylval = AddToken(yytext);return STRING;}
 
