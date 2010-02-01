@@ -17,16 +17,17 @@ unsigned int AddJISPElementToList(unsigned int elist, unsigned int element);
 unsigned int BeginJISPElementList(unsigned int element);
 unsigned int EndJISPElementList(unsigned int list);
 
-const int jleTypeCharacter_k = 0;
-const int jleTypeString_k= 1;
-const int jleTypeInteger_k= 2;
-const int jleTypeFloat_k= 3;
-const int jleTypeComplex_k= 4;
-const int jleTypeQuoted_k= 5;
-const int jleTypeBoolean_k= 6;
-const int jleTypeRational_k= 7;
-const int jleTypeIdentifier_k= 8;
-const int jleTypeList_k=9;
+const unsigned int jleTypeCharacter_k = 0;
+const unsigned int jleTypeString_k= 1;
+const unsigned int jleTypeInteger_k=2 ;
+const unsigned int jleTypeRational_k= 3;
+const unsigned int jleTypeFloat_k= 4;
+const unsigned int jleTypeComplex_k= 5;
+const unsigned int jleTypeQuoted_k= 6;
+const unsigned int jleTypeBoolean_k= 7;
+const unsigned int jleTypeIdentifier_k= 8;
+const unsigned int jleTypeList_k= 9;
+const unsigned int jleTypeUnknown_k =10;
 
 %}
 
@@ -50,6 +51,7 @@ const int jleTypeList_k=9;
 
 statement: list {$$=$1;}
 | QUOTE statement {$$=AddJISPElement(jleTypeQuoted_k,$2);}
+| list_element {$$=$1;}
 ;
 
 list: OPENPAREN list_elements CLOSEDPAREN {$$=EndJISPElementList($2);}

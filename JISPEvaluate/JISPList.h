@@ -24,11 +24,11 @@ namespace JISP
      jleTypeCharacter_k = 0,
      jleTypeString_k,
      jleTypeInteger_k,
+     jleTypeRational_k,
      jleTypeFloat_k,
      jleTypeComplex_k,
      jleTypeQuoted_k,
      jleTypeBoolean_k,
-     jleTypeRational_k,
      jleTypeIdentifier_k,
      jleTypeList_k,
      jleTypeUnknown_k

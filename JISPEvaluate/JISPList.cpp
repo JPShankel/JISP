@@ -220,6 +220,39 @@ namespace JISP
         ret = ret && (testString == "#f");
         JISP::ListElementToStringVerbose(&element2,&testString);
         ret = ret && (testString == "#f");
+
+        JISP::StringToListElement("(+ 1 2)",&element1);
+        JISP::ListElementToStringConcise(&element1,&testString);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+        ret = ret && (testString == "3");
+
+        JISP::StringToListElement("(- (+ 3 4) (/ 4 4) (* 2 2.0))",&element1);
+        JISP::ListElementToStringConcise(&element1,&testString);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+        ret = ret && (testString == "2.000000");
+        
+        JISP::StringToListElement("(/ 120 4 2)",&element1);
+        JISP::ListElementToStringConcise(&element1,&testString);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+        ret = ret && (testString == "15");
+
+        JISP::StringToListElement("(define a 1)",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::StringToListElement("a",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+
+        ret = ret && (testString == "1");
+
+        JISP::StringToListElement("(+ a 1)",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+
+        ret = ret && (testString == "2");
+
         
         DestroyJISPContext(context);
         return ret;
@@ -478,9 +511,12 @@ namespace JISP
     typedef bool (*JISPFunctionPtr_t)(JISPContext_t *context,const char *fn,const ListElementVector_t *parameters,ListElement_t *output);
     typedef std::map<std::string,JISPFunctionPtr_t> JISPFunctionMap_t;
 
+    typedef std::map<std::string,ListElement_t> JISPDefineMap_t;
+
     struct JISPContext_t
     {
         JISPFunctionMap_t functionMap_;
+        JISPDefineMap_t defineMap_;
     };
     /////////////////////////////
 
@@ -551,6 +587,34 @@ namespace JISP
     }
     /////////////////////////////
 
+    bool JISPDefineFunction(JISPContext_t *context,const char *fn,const ListElementVector_t *parameters,ListElement_t *output)
+    {
+        if (parameters->size() != 2)
+        {
+            std::cout << "Error - wrong number of parameters for define" << std::endl;
+            return false;
+        }
+
+        const ListElementIterator_t *it = IteratorFromListElement(&(*parameters)[0]);
+        
+        if (it->type_ != jleTypeIdentifier_k)
+        {
+            std::cout << "Error - attempt to define non-identifier" << std::endl;
+            return false;
+        }
+
+
+        ListElement_t value;
+        if (EvaluateListElement(context,&(*parameters)[1],&value))
+        {
+            std::string idName = reinterpret_cast<const char *>(it->data_);
+            context->defineMap_.insert(JISPDefineMap_t::value_type(idName,value));
+            return true;
+        }
+        return false;
+    }
+    /////////////////////////////
+
 
     bool JISPApplyFunction(JISPContext_t *context,const char *fn,const ListElementVector_t *parameters,ListElement_t *output)
     {
@@ -614,35 +678,23 @@ namespace JISP
 
         return number;
     }
-
-    bool JISPBinaryComparison(JISPContext_t *context,const char *fn,const ListElementVector_t *parameters,ListElement_t *output)
+    static ListElementTypes_t EvaluateNumericalParameters(const ListElementVector_t *parameters,std::vector<JISPNumber_t> &numbers)
     {
-        if (parameters->size() < 2)
-        {
-            std::cout << "Error - incorrect number of parameters to function " << fn << std::endl;
-            return false;
-        }
-
-        std::string fnStr = fn;
-        std::vector<JISPNumber_t> numbers;
-
-        bool result = true;
-
-        ListElementTypes_t type = jleTypeInteger_k;
-
         size_t i,iend;
+        numbers.clear();
+        ListElementTypes_t type = jleTypeInteger_k;
 
         for (i=0,iend=parameters->size();i<iend;++i)
         {
             numbers.push_back(JISPEvaluateNumber((*parameters)[i]));
-            if (numbers.back().type_ == jleTypeFloat_k)
+            if (static_cast<int>(numbers.back().type_) > static_cast<int>(type))
             {
-                type = jleTypeFloat_k;
+                type = numbers.back().type_;
             }
-            if (numbers.back().type_ == jleTypeUnknown_k)
+            if (type == jleTypeUnknown_k)
             {
-                std::cout << "Error - unsupported type for function " << fn << std::endl;
-                return false;
+                std::cout << "Error - unsupported type for function " << std::endl;
+                return type;
             }
         }
 
@@ -657,6 +709,300 @@ namespace JISP
                 }
             }
         }
+        return type;
+    }
+
+    JISPNumber_t operator+(const JISPNumber_t &op1,const JISPNumber_t &op2)
+    {
+        const JISPNumber_t *pop1 = &op1;
+        const JISPNumber_t *pop2 = &op2;;
+
+        JISPNumber_t aop;
+
+        if (op1.type_ != op2.type_)
+        {
+            if (static_cast<int>(op1.type_) > static_cast<int>(op2.type_))
+            {
+                pop2 = &aop;
+                aop.type_ = op2.type_;
+                if (op1.type_ == jleTypeFloat_k)
+                {
+                    if (aop.type_ == jleTypeInteger_k)
+                    {
+                        aop.type_ = jleTypeFloat_k;
+                        aop.number_.float_ = static_cast<float>(aop.number_.int_);
+                    }
+                }
+            }
+            if (static_cast<int>(op2.type_) > static_cast<int>(op1.type_))
+            {
+                pop1 = &aop;
+                aop.type_ = op1.type_;
+                if (op2.type_ == jleTypeFloat_k)
+                {
+                    if (aop.type_ == jleTypeInteger_k)
+                    {
+                        aop.type_ = jleTypeFloat_k;
+                        aop.number_.float_ = static_cast<float>(aop.number_.int_);
+                    }
+                }
+            }
+        }
+
+
+        JISPNumber_t ret;
+        ret.type_ = pop1->type_;
+
+        if (pop1->type_ == jleTypeInteger_k)
+        {
+            ret.number_.int_ = pop1->number_.int_ + pop2->number_.int_;
+        }
+        if (pop2->type_ == jleTypeFloat_k)
+        {
+            ret.number_.float_ = pop1->number_.float_ + pop2->number_.float_;
+        }
+
+        return ret;
+    }
+
+    JISPNumber_t operator-(const JISPNumber_t &op1,const JISPNumber_t &op2)
+    {
+        const JISPNumber_t *pop1 = &op1;
+        const JISPNumber_t *pop2 = &op2;;
+
+        JISPNumber_t aop;
+
+        if (op1.type_ != op2.type_)
+        {
+            if (static_cast<int>(op1.type_) > static_cast<int>(op2.type_))
+            {
+                pop2 = &aop;
+                aop.type_ = op2.type_;
+                if (op1.type_ == jleTypeFloat_k)
+                {
+                    if (aop.type_ == jleTypeInteger_k)
+                    {
+                        aop.type_ = jleTypeFloat_k;
+                        aop.number_.float_ = static_cast<float>(aop.number_.int_);
+                    }
+                }
+            }
+            if (static_cast<int>(op2.type_) > static_cast<int>(op1.type_))
+            {
+                pop1 = &aop;
+                aop.type_ = op1.type_;
+                if (op2.type_ == jleTypeFloat_k)
+                {
+                    if (aop.type_ == jleTypeInteger_k)
+                    {
+                        aop.type_ = jleTypeFloat_k;
+                        aop.number_.float_ = static_cast<float>(aop.number_.int_);
+                    }
+                }
+            }
+        }
+
+
+        JISPNumber_t ret;
+        ret.type_ = pop1->type_;
+
+        if (pop1->type_ == jleTypeInteger_k)
+        {
+            ret.number_.int_ = pop1->number_.int_ - pop2->number_.int_;
+        }
+        if (pop2->type_ == jleTypeFloat_k)
+        {
+            ret.number_.float_ = pop1->number_.float_ - pop2->number_.float_;
+        }
+
+        return ret;
+    }
+
+    JISPNumber_t operator*(const JISPNumber_t &op1,const JISPNumber_t &op2)
+    {
+        const JISPNumber_t *pop1 = &op1;
+        const JISPNumber_t *pop2 = &op2;;
+
+        JISPNumber_t aop;
+
+        if (op1.type_ != op2.type_)
+        {
+            if (static_cast<int>(op1.type_) > static_cast<int>(op2.type_))
+            {
+                pop2 = &aop;
+                aop.type_ = op2.type_;
+                if (op1.type_ == jleTypeFloat_k)
+                {
+                    if (aop.type_ == jleTypeInteger_k)
+                    {
+                        aop.type_ = jleTypeFloat_k;
+                        aop.number_.float_ = static_cast<float>(aop.number_.int_);
+                    }
+                }
+            }
+            if (static_cast<int>(op2.type_) > static_cast<int>(op1.type_))
+            {
+                pop1 = &aop;
+                aop.type_ = op1.type_;
+                if (op2.type_ == jleTypeFloat_k)
+                {
+                    if (aop.type_ == jleTypeInteger_k)
+                    {
+                        aop.type_ = jleTypeFloat_k;
+                        aop.number_.float_ = static_cast<float>(aop.number_.int_);
+                    }
+                }
+            }
+        }
+
+
+        JISPNumber_t ret;
+        ret.type_ = pop1->type_;
+
+        if (pop1->type_ == jleTypeInteger_k)
+        {
+            ret.number_.int_ = pop1->number_.int_ * pop2->number_.int_;
+        }
+        if (pop2->type_ == jleTypeFloat_k)
+        {
+            ret.number_.float_ = pop1->number_.float_ * pop2->number_.float_;
+        }
+
+        return ret;
+    }
+
+    JISPNumber_t operator/(const JISPNumber_t &op1,const JISPNumber_t &op2)
+    {
+        const JISPNumber_t *pop1 = &op1;
+        const JISPNumber_t *pop2 = &op2;;
+
+        JISPNumber_t aop;
+
+        if (op1.type_ != op2.type_)
+        {
+            if (static_cast<int>(op1.type_) > static_cast<int>(op2.type_))
+            {
+                pop2 = &aop;
+                aop.type_ = op2.type_;
+                if (op1.type_ == jleTypeFloat_k)
+                {
+                    if (aop.type_ == jleTypeInteger_k)
+                    {
+                        aop.type_ = jleTypeFloat_k;
+                        aop.number_.float_ = static_cast<float>(aop.number_.int_);
+                    }
+                }
+            }
+            if (static_cast<int>(op2.type_) > static_cast<int>(op1.type_))
+            {
+                pop1 = &aop;
+                aop.type_ = op1.type_;
+                if (op2.type_ == jleTypeFloat_k)
+                {
+                    if (aop.type_ == jleTypeInteger_k)
+                    {
+                        aop.type_ = jleTypeFloat_k;
+                        aop.number_.float_ = static_cast<float>(aop.number_.int_);
+                    }
+                }
+            }
+        }
+
+
+        JISPNumber_t ret;
+        ret.type_ = pop1->type_;
+
+        if (pop1->type_ == jleTypeInteger_k)
+        {
+            ret.number_.int_ = pop1->number_.int_ / pop2->number_.int_;
+        }
+        if (pop2->type_ == jleTypeFloat_k)
+        {
+            ret.number_.float_ = pop1->number_.float_ / pop2->number_.float_;
+        }
+
+        return ret;
+    }
+
+    bool JISPArithmeticFunction(JISPContext_t *context, const char *fn,const ListElementVector_t *parameters,ListElement_t *output)
+    {
+        if (parameters->size() < 2)
+        {
+            std::cout << "Error - incorrect number of parameters to function " << fn << std::endl;
+            return false;
+        }
+
+        std::string fnStr = fn;
+        std::vector<JISPNumber_t> numbers;
+
+        ListElementTypes_t type = EvaluateNumericalParameters(parameters,numbers);
+
+        if (type == jleTypeUnknown_k)
+        {
+            return false;
+        }
+
+        JISPNumber_t result = numbers[0];
+        for (size_t i=1,iend=numbers.size();i<iend;++i)
+        {
+            JISPNumber_t &operand = numbers[i];
+            if (fnStr == "+")
+            {
+                result = result + operand;
+            }
+            if (fnStr == "-")
+            {
+                result = result - operand;
+            }
+            if (fnStr == "/")
+            {
+                result = result / operand;
+            }
+            if (fnStr == "*")
+            {
+                result = result * operand;
+            }
+
+        }
+
+        char buf[0xff];
+        if (result.type_ == jleTypeInteger_k)
+        {
+            sprintf(buf,"%d",result.number_.int_);
+        }
+        if (result.type_ == jleTypeFloat_k)
+        {
+            sprintf(buf,"%f",result.number_.float_);
+        }
+
+
+        JISP::CreateListElement(result.type_,buf,static_cast<unsigned int>(strlen(buf)+1)*sizeof(buf[0]),output);
+        return true;
+    }
+
+
+
+    bool JISPBinaryComparison(JISPContext_t *context,const char *fn,const ListElementVector_t *parameters,ListElement_t *output)
+    {
+        if (parameters->size() < 2)
+        {
+            std::cout << "Error - incorrect number of parameters to function " << fn << std::endl;
+            return false;
+        }
+
+        std::string fnStr = fn;
+        std::vector<JISPNumber_t> numbers;
+
+        bool result = true;
+
+        ListElementTypes_t type = EvaluateNumericalParameters(parameters,numbers);
+        if (type == jleTypeUnknown_k)
+        {
+            return false;
+        }
+
+        size_t i,iend;
+
 
         for (i=0,iend=numbers.size()-1;i<iend;++i)
         {
@@ -722,6 +1068,19 @@ namespace JISP
     {
         const ListElementIterator_t *inputIterator = IteratorFromListElement(input);
 
+        if (inputIterator->type_ == jleTypeIdentifier_k)
+        {
+            std::string function = reinterpret_cast<const char *>(inputIterator->data_);
+            JISPDefineMap_t::iterator it = context->defineMap_.find(function);
+            if (it == context->defineMap_.end())
+            {
+                std::cout << "Error - undefined identifier " << function.c_str() << std::endl;
+                return false;
+            }
+            (*output) = (*it).second;
+            return true;
+        }
+
         if (inputIterator->type_ == jleTypeString_k ||
             inputIterator->type_ == jleTypeInteger_k ||
             inputIterator->type_ == jleTypeFloat_k)
@@ -773,7 +1132,9 @@ namespace JISP
                         carIterator = IteratorFromListElement(&car);
                         cdrIterator = IteratorFromListElement(&cdr);
 
-                        if (carIterator->type_ == jleTypeList_k || carIterator->type_ == jleTypeQuoted_k)
+                        if (carIterator->type_ == jleTypeList_k 
+                            || carIterator->type_ == jleTypeQuoted_k
+                            || carIterator->type_ == jleTypeIdentifier_k)
                         {
                             EvaluateListElement(context,&car,&car);
                         }
@@ -810,6 +1171,11 @@ namespace JISP
         ret->functionMap_.insert(JISPFunctionMap_t::value_type(">=",JISPBinaryComparison));
         ret->functionMap_.insert(JISPFunctionMap_t::value_type("<",JISPBinaryComparison));
         ret->functionMap_.insert(JISPFunctionMap_t::value_type("<=",JISPBinaryComparison));
+        ret->functionMap_.insert(JISPFunctionMap_t::value_type("+",JISPArithmeticFunction));
+        ret->functionMap_.insert(JISPFunctionMap_t::value_type("-",JISPArithmeticFunction));
+        ret->functionMap_.insert(JISPFunctionMap_t::value_type("*",JISPArithmeticFunction));
+        ret->functionMap_.insert(JISPFunctionMap_t::value_type("/",JISPArithmeticFunction));
+        ret->functionMap_.insert(JISPFunctionMap_t::value_type("define",JISPDefineFunction));
 
         return ret;
     }

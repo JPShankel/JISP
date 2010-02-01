@@ -48,6 +48,8 @@ extern int jisp_parse_line;
 
 [\"][A-Za-z0-9_ !@#$%^&*()\-+={}\\|\[\]\?><,./;:']*[\"] {if (in_comment) REJECT;yylval = AddToken(yytext);return STRING;}
 
+[+/\-*] {if (in_comment) REJECT;yylval = AddToken(yytext);return IDENTIFIER;}
+
 . { if(in_comment) REJECT; }
 %%
 
