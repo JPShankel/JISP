@@ -45,7 +45,7 @@ extern "C"
         std::vector<int> &elementList = elementListLists_s[elist];
 
         JISP::ListElement_t newList;
-        JISP::CreateListElement(JISP::jleTypeList_k,&listElements_s[elementList.back()][0],listElements_s[elementList.back()].size(),&newList);
+        JISP::CreateListElement(JISP::jleTypeList_k,&listElements_s[elementList.back()][0],static_cast<unsigned int>(listElements_s[elementList.back()].size()),&newList);
 
         for (int i=(int)elementList.size()-2;i>=0;--i)
         {
@@ -63,12 +63,18 @@ extern "C"
         return static_cast<int>(elementListLists_s.size()-1);
     }
 
+    unsigned int NullJISPList()
+    {
+        return 0;
+    }
+
+
     unsigned int AddJISPElement(unsigned int type, unsigned int dataIndex)
     {
         if (type == JISP::jleTypeList_k || type == JISP::jleTypeQuoted_k)
         {
             JISP::ListElement_t jle;
-            JISP::CreateListElement((JISP::ListElementTypes_t)type,&listElements_s[dataIndex][0],listElements_s[dataIndex].size(),&jle);
+            JISP::CreateListElement((JISP::ListElementTypes_t)type,&listElements_s[dataIndex][0],static_cast<unsigned int>(listElements_s[dataIndex].size()),&jle);
             listElements_s.push_back(jle);
             return static_cast<int>(listElements_s.size()-1);
         }
@@ -76,7 +82,7 @@ extern "C"
         {
             JISP::ListElement_t jle;
             std::string &str = compilerStrings_s[dataIndex];
-            JISP::CreateListElement((JISP::ListElementTypes_t)type,str.c_str(),str.size()+1,&jle);
+            JISP::CreateListElement((JISP::ListElementTypes_t)type,str.c_str(),static_cast<unsigned int>(str.size()+1),&jle);
             listElements_s.push_back(jle);
             return static_cast<int>(listElements_s.size()-1);
         }
@@ -113,6 +119,13 @@ namespace JISP
     {
         compilerStrings_s.clear();
         listElements_s.clear();
+        elementListLists_s.clear();
+
+        // null
+        JISP::ListElement_t newList;
+        JISP::CreateListElement(JISP::jleTypeList_k,0,0,&newList);
+        listElements_s.push_back(newList);
+
         compile(data);
         return true;
     }

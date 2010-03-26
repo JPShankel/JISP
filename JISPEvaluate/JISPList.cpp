@@ -11,6 +11,7 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <stack>
 
 
 
@@ -247,13 +248,130 @@ namespace JISP
 
         ret = ret && (testString == "1");
 
+        JISP::StringToListElement("(define b a)",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::StringToListElement("b",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+
+        ret = ret && (testString == "1");
+
+        JISP::StringToListElement("(define b 2)",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::StringToListElement("b",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+        
+        ret = ret && (testString == "2");
+
+        JISP::StringToListElement("a",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+        
+        ret = ret && (testString == "1");
+
+
         JISP::StringToListElement("(+ a 1)",&element1);
         JISP::EvaluateListElement(context,&element1,&element2);
         JISP::ListElementToStringConcise(&element2,&testString);
 
         ret = ret && (testString == "2");
 
+        JISP::StringToListElement("(define plus +)",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::StringToListElement("(plus 1 2)",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+
+        ret = ret && (testString == "3");
+
+        JISP::StringToListElement("(define doubleplus plus)",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::StringToListElement("(doubleplus 3 4)",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+
+        ret = ret && (testString == "7");
         
+        JISP::StringToListElement("()",&element1);
+
+        JISP::StringToListElement("'()",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element1,&testString);
+        
+        ret = ret && (testString == "' ()");
+
+        JISP::ListElementToStringConcise(&element2,&testString);
+
+        ret = ret && (testString == "()");
+
+        JISP::StringToListElement("(atom? 1)",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+
+        ret = ret && (testString == "#t");
+
+        JISP::StringToListElement("(atom? debbie)",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+        
+        ret = ret && (testString == "#f");
+
+        JISP::StringToListElement("(atom? 'harry)",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+        
+        ret = ret && (testString == "#t");
+
+        JISP::StringToListElement("(null? 1)",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+        
+        ret = ret && (testString == "#f");
+        
+        JISP::StringToListElement("(null? '(a list))",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+        
+        ret = ret && (testString == "#f");
+
+        JISP::StringToListElement("(null? '())",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+        
+        ret = ret && (testString == "#t");
+
+        JISP::StringToListElement("(list? 0)",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+        
+        ret = ret && (testString == "#f");
+
+        JISP::StringToListElement("(list? (a b))",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+        
+        ret = ret && (testString == "#f");
+
+        JISP::StringToListElement("(list? '(a b))",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+        
+        ret = ret && (testString == "#t");
+
+        JISP::StringToListElement("(list? '())",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+        
+        ret = ret && (testString == "#t");
+
+        // illegal syntax ()
+        JISP::StringToListElement("(list? ())",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+
+        ret = ret && (testString == "#f");
+
         DestroyJISPContext(context);
         return ret;
     }
@@ -286,7 +404,10 @@ namespace JISP
         ListElementIterator_t cdrList;
         if (type == jleTypeList_k)
         {
-            cdrLength = sizeof(ListElementIterator_t);
+            if (dataLength != 0) 
+            {
+                cdrLength = sizeof(ListElementIterator_t);
+            }
             cdrList.type_ = jleTypeList_k;
             cdrList.carLen_ = 0;
             cdrList.cdrLen_ = 0;
@@ -513,10 +634,13 @@ namespace JISP
 
     typedef std::map<std::string,ListElement_t> JISPDefineMap_t;
 
+    typedef std::stack<JISPDefineMap_t>  JISPLetStack_t;
+
     struct JISPContext_t
     {
         JISPFunctionMap_t functionMap_;
         JISPDefineMap_t defineMap_;
+        JISPLetStack_t letStack_;
     };
     /////////////////////////////
 
@@ -524,8 +648,12 @@ namespace JISP
     {
         if (parameters->size() == 2)
         {
+            ListElementVector_t evaluatedParameters(2);
+            JISP::EvaluateListElement(context,&(*parameters)[0],&evaluatedParameters[0]);
+            JISP::EvaluateListElement(context,&(*parameters)[1],&evaluatedParameters[1]);
+
             ListElement_t localOutput;
-            JISPCons(&(*parameters)[0],&(*parameters)[1],&localOutput);
+            JISPCons(&evaluatedParameters[0],&evaluatedParameters[1],&localOutput);
             (*output) = localOutput;
             return true;
         }
@@ -541,11 +669,17 @@ namespace JISP
     {
         if (parameters->size() == 1)
         {
-            const ListElementIterator_t *paramIterator = JISP::IteratorFromListElement(&(*parameters)[0]);
+            ListElement_t evaluatedParameter;
+            JISP::EvaluateListElement(context,&(*parameters)[0],&evaluatedParameter);
+            const ListElementIterator_t *paramIterator = JISP::IteratorFromListElement(&evaluatedParameter);
             if (paramIterator->type_ == jleTypeList_k)
             {
+                if (paramIterator->carLen_ == 0)
+                {
+                    std::cout << "Error - () is not a pair" << std::endl;
+                }
                 ListElement_t localOutput;
-                JISPCAR(&(*parameters)[0],&localOutput);
+                JISPCAR(&evaluatedParameter,&localOutput);
                 (*output) = localOutput;
                 return true;
             }
@@ -566,11 +700,18 @@ namespace JISP
     {
         if (parameters->size() == 1)
         {
-            const ListElementIterator_t *paramIterator = JISP::IteratorFromListElement(&(*parameters)[0]);
+            ListElement_t evaluatedParameter;
+            JISP::EvaluateListElement(context,&(*parameters)[0],&evaluatedParameter);
+            const ListElementIterator_t *paramIterator = JISP::IteratorFromListElement(&evaluatedParameter);
             if (paramIterator->type_ == jleTypeList_k)
             {
+                if (paramIterator->cdrLen_ == 0)
+                {
+                    std::cout << "Error - () is not a pair" << std::endl;
+                    return false;
+                }
                 ListElement_t localOutput;
-                JISPCDR(&(*parameters)[0],&localOutput);
+                JISPCDR(&evaluatedParameter,&localOutput);
                 (*output) = localOutput;
                 return true;
             }
@@ -608,6 +749,7 @@ namespace JISP
         if (EvaluateListElement(context,&(*parameters)[1],&value))
         {
             std::string idName = reinterpret_cast<const char *>(it->data_);
+            context->defineMap_.erase(idName);
             context->defineMap_.insert(JISPDefineMap_t::value_type(idName,value));
             return true;
         }
@@ -618,11 +760,49 @@ namespace JISP
 
     bool JISPApplyFunction(JISPContext_t *context,const char *fn,const ListElementVector_t *parameters,ListElement_t *output)
     {
+        if (!context->letStack_.empty())
+        {
+            JISPDefineMap_t &dm = context->letStack_.top();
+            JISPDefineMap_t::iterator it = dm.find(std::string(fn));
+            if (it != dm.end())
+            {
+                ListElementIterator_t *lei = IteratorFromListElement(&(*it).second);
+                if (lei->type_ == jleTypeIdentifier_k)
+                {
+                    std::string function = reinterpret_cast<const char *>(lei->data_);
+                    return JISPApplyFunction(context,function.c_str(),parameters,output);
+                }
+                else
+                {
+                    std::cout << "Error - attempt to apply non-function " << fn << std::endl;
+                    return false;
+                }
+            }
+        }
+
+        JISPDefineMap_t::iterator dit = context->defineMap_.find(std::string(fn));
+        if (dit != context->defineMap_.end())
+        {
+            ListElementIterator_t *lei = IteratorFromListElement(&(*dit).second);
+            if (lei->type_ = jleTypeIdentifier_k)
+            {
+                std::string function = reinterpret_cast<const char *>(lei->data_);
+                return JISPApplyFunction(context,function.c_str(),parameters,output);
+            }
+            else
+            {
+                std::cout << "Error - attempt to apply non-function " << fn << std::endl;
+                return false;
+            }
+        }
+
         JISPFunctionMap_t::iterator it = context->functionMap_.find(std::string(fn));
         if (it != context->functionMap_.end())
         {
             return (*(*it).second)(context,fn,parameters,output);
         }
+
+
         std::cout << "Error - unidentified function " << fn << std::endl;
         return false;
     }
@@ -932,10 +1112,19 @@ namespace JISP
             return false;
         }
 
+        size_t i,iend;
+        ListElementVector_t evaluatedParameters(parameters->size());
+
+        for (i=0,iend=parameters->size();i<iend;++i)
+        {
+            JISP::EvaluateListElement(context,&(*parameters)[i],&evaluatedParameters[i]);
+        }
+
+
         std::string fnStr = fn;
         std::vector<JISPNumber_t> numbers;
 
-        ListElementTypes_t type = EvaluateNumericalParameters(parameters,numbers);
+        ListElementTypes_t type = EvaluateNumericalParameters(&evaluatedParameters,numbers);
 
         if (type == jleTypeUnknown_k)
         {
@@ -943,7 +1132,7 @@ namespace JISP
         }
 
         JISPNumber_t result = numbers[0];
-        for (size_t i=1,iend=numbers.size();i<iend;++i)
+        for (i=1,iend=numbers.size();i<iend;++i)
         {
             JISPNumber_t &operand = numbers[i];
             if (fnStr == "+")
@@ -980,6 +1169,51 @@ namespace JISP
         return true;
     }
 
+    bool JISPUnaryQuery(JISPContext_t *context,const char *fn,const ListElementVector_t *parameters,ListElement_t *output)
+    {
+        std::string fnStr = fn;
+        if (parameters->size() > 1)
+        {
+            std::cout << "Error - incorrect number of parameters to function " << fn << std::endl;
+            return false;
+        }
+
+        JISP::ListElement_t evaluatedParameter;
+
+        bool result = false;
+        
+        if (!JISP::EvaluateListElement(context,&(*parameters)[0],&evaluatedParameter))
+        {
+            std::cout << "Error - unidentified parameter in function " << fn << std::endl;
+        }
+        else
+        {
+
+            const ListElementIterator_t *it = IteratorFromListElement(&evaluatedParameter);
+
+
+            if (fnStr == "atom?")
+            {
+                result = (it->type_ != jleTypeList_k);
+            }
+
+            if (fnStr == "list?")
+            {
+                result = (it->type_ == jleTypeList_k);
+            }
+
+            if (fnStr == "null?")
+            {
+                result = ( (it->type_ == jleTypeList_k) && (it->carLen_ == 0 && it->cdrLen_ == 0) );
+            }
+        }
+
+        CreateListElement(jleTypeBoolean_k,&result,sizeof(bool),output);
+
+
+        return true;
+    }
+
 
 
     bool JISPBinaryComparison(JISPContext_t *context,const char *fn,const ListElementVector_t *parameters,ListElement_t *output)
@@ -993,15 +1227,23 @@ namespace JISP
         std::string fnStr = fn;
         std::vector<JISPNumber_t> numbers;
 
+        size_t i,iend;
+
+        ListElementVector_t evaluatedParameters(parameters->size());
+        for (i=0,iend=parameters->size();i<iend;++i)
+        {
+            JISP::EvaluateListElement(context,&(*parameters)[i],&evaluatedParameters[i]);
+        }
+
+
         bool result = true;
 
-        ListElementTypes_t type = EvaluateNumericalParameters(parameters,numbers);
+        ListElementTypes_t type = EvaluateNumericalParameters(&evaluatedParameters,numbers);
         if (type == jleTypeUnknown_k)
         {
             return false;
         }
 
-        size_t i,iend;
 
 
         for (i=0,iend=numbers.size()-1;i<iend;++i)
@@ -1071,14 +1313,34 @@ namespace JISP
         if (inputIterator->type_ == jleTypeIdentifier_k)
         {
             std::string function = reinterpret_cast<const char *>(inputIterator->data_);
-            JISPDefineMap_t::iterator it = context->defineMap_.find(function);
-            if (it == context->defineMap_.end())
+
+            if (!context->letStack_.empty())
             {
-                std::cout << "Error - undefined identifier " << function.c_str() << std::endl;
-                return false;
+                JISPDefineMap_t &dm = context->letStack_.top();
+                JISPDefineMap_t::iterator it = dm.find(function);
+                if (it != dm.end())
+                {
+                    (*output) = (*it).second;
+                    return true;
+                }
             }
-            (*output) = (*it).second;
-            return true;
+
+            JISPDefineMap_t::iterator dit = context->defineMap_.find(function);
+            if (dit != context->defineMap_.end())
+            {
+                (*output) = (*dit).second;
+                return true;
+            }
+
+            JISPFunctionMap_t::iterator fit = context->functionMap_.find(function);
+            if (fit != context->functionMap_.end())
+            {
+                (*output) = (*input);
+                return true;
+            }
+
+            std::cout << "Error - undefined identifier " << function.c_str() << std::endl;
+            return false;
         }
 
         if (inputIterator->type_ == jleTypeString_k ||
@@ -1132,12 +1394,6 @@ namespace JISP
                         carIterator = IteratorFromListElement(&car);
                         cdrIterator = IteratorFromListElement(&cdr);
 
-                        if (carIterator->type_ == jleTypeList_k 
-                            || carIterator->type_ == jleTypeQuoted_k
-                            || carIterator->type_ == jleTypeIdentifier_k)
-                        {
-                            EvaluateListElement(context,&car,&car);
-                        }
                         parameters.push_back(car);
                     }
 
@@ -1151,8 +1407,8 @@ namespace JISP
             }
             else
             {
-                (*output) = (*input);
-                return true;
+                std::cout << "Invalid Syntax ()" << std::endl;
+                return false;
             }
         }
         return false;
@@ -1176,6 +1432,9 @@ namespace JISP
         ret->functionMap_.insert(JISPFunctionMap_t::value_type("*",JISPArithmeticFunction));
         ret->functionMap_.insert(JISPFunctionMap_t::value_type("/",JISPArithmeticFunction));
         ret->functionMap_.insert(JISPFunctionMap_t::value_type("define",JISPDefineFunction));
+        ret->functionMap_.insert(JISPFunctionMap_t::value_type("atom?",JISPUnaryQuery));
+        ret->functionMap_.insert(JISPFunctionMap_t::value_type("list?",JISPUnaryQuery));
+        ret->functionMap_.insert(JISPFunctionMap_t::value_type("null?",JISPUnaryQuery));
 
         return ret;
     }

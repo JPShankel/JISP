@@ -17,6 +17,8 @@ unsigned int AddJISPElementToList(unsigned int elist, unsigned int element);
 unsigned int BeginJISPElementList(unsigned int element);
 unsigned int EndJISPElementList(unsigned int list);
 
+unsigned int NullJISPList();
+
 const unsigned int jleTypeCharacter_k = 0;
 const unsigned int jleTypeString_k= 1;
 const unsigned int jleTypeInteger_k=2 ;
@@ -55,6 +57,7 @@ statement: list {$$=$1;}
 ;
 
 list: OPENPAREN list_elements CLOSEDPAREN {$$=EndJISPElementList($2);}
+| OPENPAREN CLOSEDPAREN { $$=NullJISPList(); }
 ;
 
 list_elements : list_element {$$=BeginJISPElementList($1);}
