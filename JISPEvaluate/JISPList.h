@@ -49,6 +49,11 @@ namespace JISP
     JISPContext_t *CreateJISPContext();
     void DestroyJISPContext(JISPContext_t *context);
 
+    typedef void (*JISPOutputHandler_t)(const char *text,void *handlerData);
+
+    void SetJISPContextErrorHandler(JISPContext_t *context,JISPOutputHandler_t eh,void *handlerData);
+    void SetJISPContextOutputHandler(JISPContext_t *context,JISPOutputHandler_t oh,void *handlerData);
+
     bool ListElementUnitTest();
 }
 

@@ -18,14 +18,21 @@
 namespace JISP
 {
 
+    void ListElementUnitTestOutputHandler(const char *msg,void *data)
+    {
+        std::string *str = reinterpret_cast<std::string *>(data);
+        (*str) = msg;
+    }
+
 
     bool ListElementUnitTest()
     {
-        std::string testString;
+        std::string testString,outputString;
         bool ret = true;
         ListElement_t element1,element2,element3,element4;
 
         JISPContext_t *context = CreateJISPContext();
+        SetJISPContextErrorHandler(context,ListElementUnitTestOutputHandler,&outputString);
 
         // element1 = "string1", element2 = "string2"
         JISP::CreateListElement(jleTypeString_k,"\"string1\"",(unsigned int)strlen("\"string1\"")+1,&element1);
@@ -604,14 +611,20 @@ namespace JISP
     {
         (*str) = "";
         const ListElementIterator_t *jleIterator = IteratorFromListElement(jle);
-        ListElementToStringConciseRecurse(jleIterator,str,true);
 
-        while ( !(*str).empty() && (*str)[(*str).length()-1] == ' ')
+        if (jleIterator != 0)
         {
-            (*str) = (*str).substr(0,(*str).length()-1);
-        }
+            ListElementToStringConciseRecurse(jleIterator,str,true);
 
-        return true;
+            while ( !(*str).empty() && (*str)[(*str).length()-1] == ' ')
+            {
+                (*str) = (*str).substr(0,(*str).length()-1);
+            }
+            
+
+            return true;
+        }
+        return false;
     }
     /////////////////////////////
 
@@ -641,7 +654,41 @@ namespace JISP
         JISPFunctionMap_t functionMap_;
         JISPDefineMap_t defineMap_;
         JISPLetStack_t letStack_;
+
+        JISPOutputHandler_t outputHandler_,errorHandler_;
+        void *outputHandlerData_,*errorHandlerData_;
     };
+
+    void SetJISPContextErrorHandler(JISPContext_t *context,JISPOutputHandler_t eh,void *handlerData)
+    {
+        context->errorHandler_ = eh;
+        context->errorHandlerData_ = handlerData;
+    }
+
+    void SetJISPContextOutputHandler(JISPContext_t *context,JISPOutputHandler_t oh,void *handlerData)
+    {
+        context->outputHandler_ = oh;
+        context->outputHandlerData_ = handlerData;
+    }
+
+    void JISPOutput(JISPContext_t *context,const char *text)
+    {
+        if (context->outputHandler_ != 0)
+        {
+            (*(context->outputHandler_))(text,context->outputHandlerData_);
+        }
+    }
+
+    void JISPError(JISPContext_t *context,const char *errorMsg)
+    {
+        if (context->errorHandler_ != 0)
+        {
+            (*(context->errorHandler_))(errorMsg,context->errorHandlerData_);
+        }
+    }
+
+
+
     /////////////////////////////
 
     bool JISPConsFunction(JISPContext_t *context,const char *fn,const ListElementVector_t *parameters,ListElement_t *output)
@@ -659,7 +706,7 @@ namespace JISP
         }
         else
         {
-            std::cout << "Error - wrong number of parameters for cons" << std::endl;
+            JISPError(context,"Error - wrong number of parameters for cons");
             return false;
         }
     }
@@ -676,7 +723,7 @@ namespace JISP
             {
                 if (paramIterator->carLen_ == 0)
                 {
-                    std::cout << "Error - () is not a pair" << std::endl;
+                    JISPError(context,"Error - () is not a pair");
                 }
                 ListElement_t localOutput;
                 JISPCAR(&evaluatedParameter,&localOutput);
@@ -685,12 +732,12 @@ namespace JISP
             }
             else
             {
-                std::cout << "Error - bad parameter for car" << std::endl;
+                JISPError(context,"Error - bad parameter for car");
             }
         }
         else
         {
-            std::cout << "Error - wrong number of parameters for car" << std::endl;
+            JISPError(context,"Error - wrong number of parameters for car");
         }
         return false;
     }
@@ -703,11 +750,11 @@ namespace JISP
             ListElement_t evaluatedParameter;
             JISP::EvaluateListElement(context,&(*parameters)[0],&evaluatedParameter);
             const ListElementIterator_t *paramIterator = JISP::IteratorFromListElement(&evaluatedParameter);
-            if (paramIterator->type_ == jleTypeList_k)
+            if (paramIterator && paramIterator->type_ == jleTypeList_k)
             {
                 if (paramIterator->cdrLen_ == 0)
                 {
-                    std::cout << "Error - () is not a pair" << std::endl;
+                    JISPError(context,"Error - () is not a pair");
                     return false;
                 }
                 ListElement_t localOutput;
@@ -717,12 +764,12 @@ namespace JISP
             }
             else
             {
-                std::cout << "Error - bad parameter for cdr" << std::endl;
+                JISPError(context,"Error - bad parameter for cdr");
             }
         }
         else
         {
-            std::cout << "Error - wrong number of parameters for cdr" << std::endl;
+            JISPError(context,"Error - wrong number of parameters for cdr");
         }
         return false;
     }
@@ -732,7 +779,7 @@ namespace JISP
     {
         if (parameters->size() != 2)
         {
-            std::cout << "Error - wrong number of parameters for define" << std::endl;
+            JISPError(context,"Error - wrong number of parameters for define");
             return false;
         }
 
@@ -740,7 +787,7 @@ namespace JISP
         
         if (it->type_ != jleTypeIdentifier_k)
         {
-            std::cout << "Error - attempt to define non-identifier" << std::endl;
+            JISPError(context,"Error - attempt to define non-identifier");
             return false;
         }
 
@@ -774,7 +821,8 @@ namespace JISP
                 }
                 else
                 {
-                    std::cout << "Error - attempt to apply non-function " << fn << std::endl;
+                    std::string err = std::string("Error - attempt to apply non-function ") +  fn;
+                    JISPError(context,err.c_str());
                     return false;
                 }
             }
@@ -791,7 +839,8 @@ namespace JISP
             }
             else
             {
-                std::cout << "Error - attempt to apply non-function " << fn << std::endl;
+                std::string err =  std::string("Error - attempt to apply non-function ") + fn;
+                JISPError(context,err.c_str());
                 return false;
             }
         }
@@ -803,7 +852,8 @@ namespace JISP
         }
 
 
-        std::cout << "Error - unidentified function " << fn << std::endl;
+        std::string err = std::string("Error - unidentified function ") + fn;
+        JISPError(context,err.c_str());
         return false;
     }
     ////////////////////////////
@@ -858,7 +908,7 @@ namespace JISP
 
         return number;
     }
-    static ListElementTypes_t EvaluateNumericalParameters(const ListElementVector_t *parameters,std::vector<JISPNumber_t> &numbers)
+    static ListElementTypes_t EvaluateNumericalParameters(JISPContext_t *context,const ListElementVector_t *parameters,std::vector<JISPNumber_t> &numbers)
     {
         size_t i,iend;
         numbers.clear();
@@ -873,7 +923,7 @@ namespace JISP
             }
             if (type == jleTypeUnknown_k)
             {
-                std::cout << "Error - unsupported type for function " << std::endl;
+                JISPError(context,"Error - unsupported type for function ");
                 return type;
             }
         }
@@ -1108,7 +1158,8 @@ namespace JISP
     {
         if (parameters->size() < 2)
         {
-            std::cout << "Error - incorrect number of parameters to function " << fn << std::endl;
+            std::string err = std::string("Error - incorrect number of parameters to function ") + fn;
+            JISPError(context,err.c_str());
             return false;
         }
 
@@ -1124,7 +1175,7 @@ namespace JISP
         std::string fnStr = fn;
         std::vector<JISPNumber_t> numbers;
 
-        ListElementTypes_t type = EvaluateNumericalParameters(&evaluatedParameters,numbers);
+        ListElementTypes_t type = EvaluateNumericalParameters(context,&evaluatedParameters,numbers);
 
         if (type == jleTypeUnknown_k)
         {
@@ -1174,7 +1225,8 @@ namespace JISP
         std::string fnStr = fn;
         if (parameters->size() > 1)
         {
-            std::cout << "Error - incorrect number of parameters to function " << fn << std::endl;
+            std::string err = std::string("Error - incorrect number of parameters to function ") + fn;
+            JISPError(context,err.c_str());
             return false;
         }
 
@@ -1184,7 +1236,8 @@ namespace JISP
         
         if (!JISP::EvaluateListElement(context,&(*parameters)[0],&evaluatedParameter))
         {
-            std::cout << "Error - unidentified parameter in function " << fn << std::endl;
+            std::string err = std::string("Error - unidentified parameter in function ") + fn;
+            JISPError(context,err.c_str());
         }
         else
         {
@@ -1220,7 +1273,8 @@ namespace JISP
     {
         if (parameters->size() < 2)
         {
-            std::cout << "Error - incorrect number of parameters to function " << fn << std::endl;
+            std::string err = std::string("Error - incorrect number of parameters to function ") + fn;
+            JISPError(context,err.c_str());
             return false;
         }
 
@@ -1238,7 +1292,7 @@ namespace JISP
 
         bool result = true;
 
-        ListElementTypes_t type = EvaluateNumericalParameters(&evaluatedParameters,numbers);
+        ListElementTypes_t type = EvaluateNumericalParameters(context,&evaluatedParameters,numbers);
         if (type == jleTypeUnknown_k)
         {
             return false;
@@ -1339,7 +1393,8 @@ namespace JISP
                 return true;
             }
 
-            std::cout << "Error - undefined identifier " << function.c_str() << std::endl;
+            std::string err = std::string("Error - undefined identifier ") + function;
+            JISPError(context,err.c_str());
             return false;
         }
 
@@ -1407,7 +1462,7 @@ namespace JISP
             }
             else
             {
-                std::cout << "Invalid Syntax ()" << std::endl;
+                JISPError(context,"Invalid Syntax ()");
                 return false;
             }
         }
@@ -1418,6 +1473,11 @@ namespace JISP
     JISPContext_t *CreateJISPContext()
     {
         JISPContext_t *ret = new JISPContext_t();
+
+        ret->errorHandler_ = 0;
+        ret->errorHandlerData_ = 0;
+        ret->outputHandler_ = 0;
+        ret->outputHandlerData_ = 0;
         
         ret->functionMap_.insert(JISPFunctionMap_t::value_type("cons",JISPConsFunction));
         ret->functionMap_.insert(JISPFunctionMap_t::value_type("car",JISPCarFunction));
