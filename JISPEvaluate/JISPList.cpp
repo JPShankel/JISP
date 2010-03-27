@@ -379,6 +379,55 @@ namespace JISP
 
         ret = ret && (testString == "#f");
 
+        // cond
+        JISP::StringToListElement("(cond ((eq? 1 1) 1) (else 0))",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+
+        ret = ret && (testString == "1");
+
+        JISP::StringToListElement("(cond ((eq? 1 2) 1) (else 0))",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+
+        ret = ret && (testString == "0");
+
+        JISP::StringToListElement("(cond ((eq? 1 1) (+ 1 2)) (else (- 5 3)))",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+
+        ret = ret && (testString == "3");
+
+        JISP::StringToListElement("(cond ((eq? 1 2) (+ 1 2)) (else (- 5 3)))",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+
+        ret = ret && (testString == "2");
+
+        JISP::StringToListElement("(cond ((eq? 1 2) (+ 1 2)) ((eq? 3 3) (+ 1 5)) (else (- 5 3)))",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+
+        ret = ret && (testString == "6");
+
+        outputString.clear();
+        JISP::StringToListElement("(cond ((eq? 1 2) (+ 1 2)) (else (- 5 3)) ((eq? 3 3) (+ 1 5)))",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+
+        ret = ret && (outputString == "Error - misplaced keyword else");
+
+        outputString.clear();
+        JISP::StringToListElement("(cond ition)",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+
+        ret = ret && (outputString == "Error - invalid syntax");
+
+        outputString.clear();
+        JISP::StringToListElement("(cond (ition al))",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+
+        ret = ret && (outputString == "Error - invalid syntax");
+
         DestroyJISPContext(context);
         return ret;
     }
@@ -657,7 +706,14 @@ namespace JISP
 
         JISPOutputHandler_t outputHandler_,errorHandler_;
         void *outputHandlerData_,*errorHandlerData_;
+
+        bool active_;
     };
+
+    bool GetJISPContextIsActive(JISPContext_t *context)
+    {
+        return context->active_;
+    }
 
     void SetJISPContextErrorHandler(JISPContext_t *context,JISPOutputHandler_t eh,void *handlerData)
     {
@@ -804,6 +860,88 @@ namespace JISP
     }
     /////////////////////////////
 
+    bool JISPSystemFunction(JISPContext_t *context,const char *fn,const ListElementVector_t *parameters,ListElement_t *output)
+    {
+        std::string fnStr = fn;
+        if (fnStr == "exit")
+        {
+            context->active_ = false;
+            return true;
+        }
+    }
+    /////////////////////////////
+
+    bool JISPCondFunction(JISPContext_t *context,const char *fn,const ListElementVector_t *parameters,ListElement_t *output)
+    {
+        size_t i,iend;
+        bool hasElse = false;
+
+        ListElement_t element;
+
+        // check for syntax errors
+        for (i=0,iend=parameters->size();i<iend;++i)
+        {
+            JISPCAR(&(*parameters)[i],&element);
+            ListElementIterator_t *it = IteratorFromListElement(&element);
+            if (it != 0)
+            {
+                if (it->type_ == JISP::jleTypeIdentifier_k)
+                {
+                    std::string idStr = reinterpret_cast<char*>(it->data_);
+                    if (idStr == "else")
+                    {
+                        if (i != iend-1)
+                        {
+                            JISPError(context,"Error - misplaced keyword else");
+                            return false;
+                        }
+                        else
+                        {
+                            hasElse = true;
+                        }
+                    }
+                    else
+                    {
+                        JISPError(context,"Error - invalid syntax");
+                        return false;
+                    }
+                }
+                else if (it->type_ != JISP::jleTypeList_k)
+                {
+                    JISPError(context,"Error - invalid syntax");
+                    return false;
+                }
+            }
+        }
+
+        // evaulate conditions
+        for (i=0,iend=parameters->size();i<iend;++i)
+        {
+            if (i==iend-1 && hasElse)
+            {
+                JISPCDR(&(*parameters)[i],&element);
+                JISPCAR(&element,&element);
+                EvaluateListElement(context,&element,output);
+                return true;
+            }
+            
+            JISPCAR(&(*parameters)[i],&element);
+            EvaluateListElement(context,&element,&element);
+            ListElementIterator_t *it = IteratorFromListElement(&element);
+            if (it !=0 && it->type_ == JISP::jleTypeBoolean_k)
+            {
+                if (*reinterpret_cast<bool*>(it->data_))
+                {
+                    JISPCDR(&(*parameters)[i],&element);
+                    JISPCAR(&element,&element);
+                    EvaluateListElement(context,&element,output);
+                    return true;
+                }
+            }
+        }
+        return true;
+    }
+    /////////////////////////////
 
     bool JISPApplyFunction(JISPContext_t *context,const char *fn,const ListElementVector_t *parameters,ListElement_t *output)
     {
@@ -1478,6 +1616,7 @@ namespace JISP
         ret->errorHandlerData_ = 0;
         ret->outputHandler_ = 0;
         ret->outputHandlerData_ = 0;
+        ret->active_ = true;
         
         ret->functionMap_.insert(JISPFunctionMap_t::value_type("cons",JISPConsFunction));
         ret->functionMap_.insert(JISPFunctionMap_t::value_type("car",JISPCarFunction));
@@ -1495,6 +1634,8 @@ namespace JISP
         ret->functionMap_.insert(JISPFunctionMap_t::value_type("atom?",JISPUnaryQuery));
         ret->functionMap_.insert(JISPFunctionMap_t::value_type("list?",JISPUnaryQuery));
         ret->functionMap_.insert(JISPFunctionMap_t::value_type("null?",JISPUnaryQuery));
+        ret->functionMap_.insert(JISPFunctionMap_t::value_type("exit",JISPSystemFunction));
+        ret->functionMap_.insert(JISPFunctionMap_t::value_type("cond",JISPCondFunction));
 
         return ret;
     }

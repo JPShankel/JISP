@@ -789,67 +789,67 @@ YY_RULE_SETUP
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 33 "..\\..\\JISPParse\\JISPLexer.l"
+#line 34 "..\\..\\JISPParse\\JISPLexer.l"
 {if (in_comment) REJECT;yylval = AddToken(yytext);return OPENPAREN;}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 34 "..\\..\\JISPParse\\JISPLexer.l"
+#line 35 "..\\..\\JISPParse\\JISPLexer.l"
 {if (in_comment) REJECT;yylval = AddToken(yytext);return CLOSEDPAREN;}
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 35 "..\\..\\JISPParse\\JISPLexer.l"
+#line 36 "..\\..\\JISPParse\\JISPLexer.l"
 {if (in_comment) REJECT;yylval = AddToken(yytext);return QUOTE;}
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 37 "..\\..\\JISPParse\\JISPLexer.l"
+#line 38 "..\\..\\JISPParse\\JISPLexer.l"
 {if (in_comment) REJECT;yylval = AddToken(yytext);return CHARACTER;}
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 39 "..\\..\\JISPParse\\JISPLexer.l"
+#line 40 "..\\..\\JISPParse\\JISPLexer.l"
 {if (in_comment) REJECT;yylval = AddToken(yytext);return INTEGER; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 41 "..\\..\\JISPParse\\JISPLexer.l"
+#line 42 "..\\..\\JISPParse\\JISPLexer.l"
 {if (in_comment) REJECT; yylval = AddToken(yytext);return RATIONAL;}
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 43 "..\\..\\JISPParse\\JISPLexer.l"
+#line 44 "..\\..\\JISPParse\\JISPLexer.l"
 {if (in_comment) REJECT;yylval = AddToken(yytext);return FLOAT;}
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 45 "..\\..\\JISPParse\\JISPLexer.l"
+#line 46 "..\\..\\JISPParse\\JISPLexer.l"
 {if (in_comment) REJECT;yylval = AddToken(yytext);return FLOAT;}
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 47 "..\\..\\JISPParse\\JISPLexer.l"
+#line 48 "..\\..\\JISPParse\\JISPLexer.l"
 {if (in_comment) REJECT;yylval = AddToken(yytext);return IDENTIFIER;}
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 49 "..\\..\\JISPParse\\JISPLexer.l"
+#line 50 "..\\..\\JISPParse\\JISPLexer.l"
 {if (in_comment) REJECT;yylval = AddToken(yytext);return STRING;}
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 51 "..\\..\\JISPParse\\JISPLexer.l"
+#line 52 "..\\..\\JISPParse\\JISPLexer.l"
 {if (in_comment) REJECT;yylval = AddToken(yytext);return IDENTIFIER;}
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 53 "..\\..\\JISPParse\\JISPLexer.l"
+#line 54 "..\\..\\JISPParse\\JISPLexer.l"
 { if(in_comment) REJECT; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 54 "..\\..\\JISPParse\\JISPLexer.l"
+#line 55 "..\\..\\JISPParse\\JISPLexer.l"
 ECHO;
 	YY_BREAK
 #line 856 "..\\..\\JISPParse\\JISPLexer.c"
@@ -1736,7 +1736,7 @@ int main()
 	return 0;
 	}
 #endif
-#line 54 "..\\..\\JISPParse\\JISPLexer.l"
+#line 55 "..\\..\\JISPParse\\JISPLexer.l"
 
 
 static char *inputStream;

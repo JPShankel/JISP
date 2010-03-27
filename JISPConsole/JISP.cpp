@@ -23,10 +23,8 @@ int main(int argc,char **argv)
 
 
     std::cout << ">";
-    while (getline(std::cin,str))
+    while (JISP::GetJISPContextIsActive(context) && getline(std::cin,str))
     {
-        if (str == "(exit)") break;
-
         JISP::ListElement_t compiledElement,evaluatedElement;
         JISP::StringToListElement(str.c_str(),&compiledElement);
 

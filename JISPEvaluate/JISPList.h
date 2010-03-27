@@ -54,6 +54,8 @@ namespace JISP
     void SetJISPContextErrorHandler(JISPContext_t *context,JISPOutputHandler_t eh,void *handlerData);
     void SetJISPContextOutputHandler(JISPContext_t *context,JISPOutputHandler_t oh,void *handlerData);
 
+    bool GetJISPContextIsActive(JISPContext_t *context);
+
     bool ListElementUnitTest();
 }
 
