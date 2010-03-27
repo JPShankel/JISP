@@ -428,6 +428,26 @@ namespace JISP
 
         ret = ret && (outputString == "Error - invalid syntax");
 
+        JISP::StringToListElement("((lambda (x) (+ x 1)) 2)",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+
+        ret = ret && (testString == "3");
+
+        JISP::StringToListElement("((lambda (a b) (eq? a (+ b 1))) 3 2)",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+
+        ret = ret && (testString == "#t");
+
+        JISP::StringToListElement("(define a (lambda (x) (+ x 1)))",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::StringToListElement("(a 2)",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+
+        ret = ret && (testString == "3");
+
         DestroyJISPContext(context);
         return ret;
     }
@@ -868,6 +888,8 @@ namespace JISP
             context->active_ = false;
             return true;
         }
+
+        return false;
     }
     /////////////////////////////
 
@@ -943,6 +965,134 @@ namespace JISP
     }
     /////////////////////////////
 
+    typedef std::map<std::string,ListElement_t> LambdaParameterMap_t;
+
+    void JISPBindLambdaParameters(ListElement_t *input,LambdaParameterMap_t *params,ListElement_t *output)
+    {
+        ListElement_t inputCar,inputCdr;
+
+        ListElement_t localOutput;
+
+        JISPCAR(input,&inputCar);
+        JISPCDR(input,&inputCdr);
+
+        ListElementIterator_t *it = IteratorFromListElement(&inputCar);
+
+        ListElementVector_t leVector;
+        while (it != 0 && it->carLen_ > 0)
+        {
+            ListElement_t *pelem = 0;
+            ListElement_t listExpression;
+            if (it->type_ == jleTypeList_k)
+            {
+                JISPBindLambdaParameters(&inputCar,params,&listExpression);
+                pelem = &listExpression;
+            }
+            else if (it->type_ == jleTypeIdentifier_k)
+            {
+                std::string name = reinterpret_cast<char *>(it->data_);
+                LambdaParameterMap_t::iterator lpIt = params->find(name);
+                if (lpIt != params->end())
+                {
+                    pelem = &(lpIt->second);
+                }
+                else
+                {
+                    pelem = &inputCar;
+                }
+            }
+            else
+            {
+                pelem = &inputCar;
+            }
+
+            leVector.push_back(*pelem);
+
+
+            JISPCAR(&inputCdr,&inputCar);
+            JISPCDR(&inputCdr,&inputCdr);
+
+            it = IteratorFromListElement(&inputCar);
+        }
+
+        CreateListElement(jleTypeList_k,0,0,output);
+
+        for (ListElementVector_t::reverse_iterator it = leVector.rbegin();it!=leVector.rend();++it)
+        {
+            JISPCons(&(*it),output,output);
+        }
+    }
+
+
+    bool JISPApplyLambdaFunction(JISPContext_t *context,const ListElement_t *lambdaFunc,const ListElementVector_t *parameters,ListElement_t *output)
+    {
+        ListElement_t lambdaParams;
+        JISPCDR(lambdaFunc,&lambdaParams);
+        JISPCAR(&lambdaParams,&lambdaParams);
+        if (lambdaParams.empty())
+        {
+            JISPError(context,"Error - invalid syntax");
+            return false;
+        }
+
+        ListElement_t lp,lps;
+        lps = lambdaParams;
+        JISPCAR(&lps,&lp);
+
+        const ListElementIterator_t *carIterator = IteratorFromListElement(&lp);
+        if (carIterator == 0)
+        {
+            JISPError(context,"Error - invalid syntax");
+            return false;
+        }
+
+
+
+        std::vector<std::string> paramNames;
+
+        while (carIterator != 0)
+        {
+            if (carIterator->type_ != jleTypeIdentifier_k)
+            {
+                JISPError(context,"Error - invalid syntax");
+                return false;
+            }
+            
+            paramNames.push_back(reinterpret_cast<const char *>(carIterator->data_));
+
+            JISPCDR(&lps,&lps);
+            JISPCAR(&lps,&lp);
+            carIterator = IteratorFromListElement(&lp);
+        }
+
+        if (paramNames.size()!= parameters->size())
+        {
+            JISPError(context,"Error - incorrect parameter count");
+            return false;
+        }
+
+        LambdaParameterMap_t lambdaParameterMap;
+
+        size_t i,iend;
+        for (i=0,iend=paramNames.size();i<iend;++i)
+        {
+            ListElement_t evaluatedParameter;
+            EvaluateListElement(context,&(*parameters)[i],&evaluatedParameter);
+            lambdaParameterMap.insert(LambdaParameterMap_t::value_type(paramNames[i],evaluatedParameter));
+        }
+
+        ListElement_t functionExpression;
+        JISPCDR(lambdaFunc,&functionExpression);
+        JISPCDR(&functionExpression,&functionExpression);
+        JISPCAR(&functionExpression,&functionExpression);
+        
+        ListElement_t boundFunction;
+        JISPBindLambdaParameters(&functionExpression,&lambdaParameterMap,&boundFunction);
+
+        return EvaluateListElement(context,&boundFunction,output);
+    }
+    /////////////////////////////
+
     bool JISPApplyFunction(JISPContext_t *context,const char *fn,const ListElementVector_t *parameters,ListElement_t *output)
     {
         if (!context->letStack_.empty())
@@ -970,10 +1120,28 @@ namespace JISP
         if (dit != context->defineMap_.end())
         {
             ListElementIterator_t *lei = IteratorFromListElement(&(*dit).second);
-            if (lei->type_ = jleTypeIdentifier_k)
+            if (lei->type_ == jleTypeIdentifier_k)
             {
                 std::string function = reinterpret_cast<const char *>(lei->data_);
                 return JISPApplyFunction(context,function.c_str(),parameters,output);
+            }
+            else if (lei->type_ == jleTypeList_k)
+            {
+                std::string str;
+                JISP::ListElementToStringConcise(&(*dit).second,&str);
+                ListElement_t car;
+                JISPCAR(&(*dit).second,&car);
+                ListElementIterator_t *carIterator = IteratorFromListElement(&car);
+                if (carIterator !=0 && carIterator->type_ == jleTypeIdentifier_k)
+                {
+                    std::string shouldBeLambda = reinterpret_cast<char *>(carIterator->data_);
+                    if (shouldBeLambda == "lambda")
+                    {
+                        return JISPApplyLambdaFunction(context,&(*dit).second,parameters,output);
+                    }
+                }
+                JISPError(context,"Error - attempt to apply non-function list");
+                return false;
             }
             else
             {
@@ -995,6 +1163,7 @@ namespace JISP
         return false;
     }
     ////////////////////////////
+
 
     struct JISPRational_t
     {
@@ -1578,13 +1747,18 @@ namespace JISP
                     JISPCDR(input,&cdr);
                     std::string function = reinterpret_cast<const char *>(carIterator->data_);
 
+                    if (function == "lambda")
+                    {
+                        (*output) = (*input);
+                        return true;
+                    }
+
                     ListElementIterator_t *cdrIterator = IteratorFromListElement(&cdr);
                     while(cdrIterator->carLen_ > 0)
                     {
                         JISPCAR(&cdr,&car);
                         JISPCDR(&cdr,&cdr);
 
-                        carIterator = IteratorFromListElement(&car);
                         cdrIterator = IteratorFromListElement(&cdr);
 
                         parameters.push_back(car);
@@ -1592,6 +1766,34 @@ namespace JISP
 
                     return JISPApplyFunction(context,function.c_str(),&parameters,output);
 
+                }
+                else if (carIterator->type_ == jleTypeList_k)
+                {
+                    ListElement_t shouldBeLambda;
+                    JISPCAR(&car,&shouldBeLambda);
+                    ListElementIterator_t *sblit = IteratorFromListElement(&shouldBeLambda);
+                    if (sblit!=0 && sblit->type_ == jleTypeIdentifier_k)
+                    {
+                        std::string sblStr = reinterpret_cast<char *>(sblit->data_);
+                        if (sblStr == "lambda")
+                        {
+                            ListElement_t lambdaFunc = car;
+
+                            JISPCDR(input,&cdr);
+                            ListElementIterator_t *cdrIterator = IteratorFromListElement(&cdr);
+                            while(cdrIterator->carLen_ > 0)
+                            {
+                                JISPCAR(&cdr,&car);
+                                JISPCDR(&cdr,&cdr);
+
+                                cdrIterator = IteratorFromListElement(&cdr);
+
+                                parameters.push_back(car);
+                            }
+                            return JISPApplyLambdaFunction(context,&lambdaFunc,&parameters,output);
+                        }
+                    }
+                    return false;
                 }
                 else
                 {
