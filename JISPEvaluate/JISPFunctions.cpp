@@ -14,15 +14,11 @@ namespace JISP
     {
         "(define caar (lambda (l) (car (car l))))",
 
+        "(define caaar (lambda (l) (car (car (car l)))))",
+
         "(define cadr (lambda (l) (car (cdr l))))",
 
-        "(define lat? (lambda (l) \
-            (cond \
-                ((null? l) #t) \
-                ((atom? (car l)) (lat? (cdr l))) \
-                (else #f) \
-            ) \
-          ))",
+        "(define caddr (lambda (l) (car (cdr (cdr l)))))",
 
         "(define not (lambda (op) \
             (cond \
