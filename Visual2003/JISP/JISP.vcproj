@@ -123,6 +123,9 @@
 				<File
 					RelativePath="..\..\JISPEvaluate\JISPList.cpp">
 				</File>
+				<File
+					RelativePath="..\..\JISPEvaluate\JISPTest.cpp">
+				</File>
 			</Filter>
 			<Filter
 				Name="Headers"

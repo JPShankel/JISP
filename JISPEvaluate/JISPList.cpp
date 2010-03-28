@@ -18,449 +18,6 @@
 namespace JISP
 {
 
-    void ListElementUnitTestOutputHandler(const char *msg,void *data)
-    {
-        std::string *str = reinterpret_cast<std::string *>(data);
-        (*str) = msg;
-    }
-
-
-    bool ListElementUnitTest()
-    {
-        std::string testString,outputString;
-        bool ret = true;
-        ListElement_t element1,element2,element3,element4;
-
-        JISPContext_t *context = CreateJISPContext();
-        SetJISPContextErrorHandler(context,ListElementUnitTestOutputHandler,&outputString);
-
-        // element1 = "string1", element2 = "string2"
-        JISP::CreateListElement(jleTypeString_k,"\"string1\"",(unsigned int)strlen("\"string1\"")+1,&element1);
-        JISP::CreateListElement(jleTypeString_k,"\"string2\"",(unsigned int)strlen("\"string2\"")+1,&element2);
-
-        JISP::ListElementToStringVerbose(&element1,&testString);
-        ret = ret && (testString == "\"string1\"");
-        JISP::ListElementToStringVerbose(&element2,&testString);
-        ret = ret && (testString == "\"string2\"");
-
-        JISP::ListElementToStringConcise(&element1,&testString);
-        ret = ret && (testString == "\"string1\"");
-        JISP::ListElementToStringConcise(&element2,&testString);
-        ret = ret && (testString == "\"string2\"");
-
-
-        // (cons "string1" "string2") = ("string1" . "string2")
-        JISP::JISPCons(&element1,&element2,&element3);
-
-        JISP::ListElementToStringVerbose(&element3,&testString);
-        ret = ret && (testString == "(\"string1\" . \"string2\")");
-        JISP::ListElementToStringConcise(&element3,&testString);
-        ret = ret && (testString == "(\"string1\" . \"string2\")");
-
-        //(list "string2") = ("string2")
-        JISP::CreateListElement(jleTypeList_k,&element2[0],static_cast<unsigned int>(element2.size()),&element3);
-
-        JISP::ListElementToStringVerbose(&element3,&testString);
-        ret = ret && (testString == "(\"string2\" . ())");
-        JISP::ListElementToStringConcise(&element3,&testString);
-        ret = ret && (testString == "(\"string2\")");
-
-        // (cons ("string1") "string2")) = (("string1") . "string2")
-        JISP::JISPCons(&element3,&element1,&element2);
-
-        JISP::ListElementToStringVerbose(&element2,&testString);
-        ret = ret && (testString == "((\"string2\" . ()) . \"string1\")");
-        JISP::ListElementToStringConcise(&element2,&testString);
-        ret = ret && (testString == "((\"string2\") . \"string1\")");
-
-        // (car (("string2") . "string1") = ("string1")
-        JISP::JISPCAR(&element2,&element3);
-        JISP::ListElementToStringConcise(&element3,&testString);
-        ret = ret && (testString == "(\"string2\")");
-        JISP::ListElementToStringVerbose(&element3,&testString);
-        ret = ret && (testString == "(\"string2\" . ())");
-
-        // (cdr (("string2") . "string1") = "string1");
-        JISP::ListElementToStringConcise(&element2,&testString);
-        JISP::JISPCDR(&element2,&element3);
-        JISP::ListElementToStringConcise(&element3,&testString);
-        ret = ret && (testString == "\"string1\"");
-        JISP::ListElementToStringVerbose(&element3,&testString);
-        ret = ret && (testString == "\"string1\"");
-
-
-        // (cons "string1" ("string2")) = ("string1" "string2")
-        JISP::CreateListElement(jleTypeString_k,"\"string2\"",(unsigned int)strlen("\"string2\"")+1,&element2);
-        JISP::CreateListElement(jleTypeList_k,&element2[0],static_cast<unsigned int>(element2.size()),&element3);
-        JISP::JISPCons(&element1,&element3,&element2);
-        
-        JISP::ListElementToStringVerbose(&element2,&testString);
-        ret = ret && (testString == "(\"string1\" . (\"string2\" . ()))");
-        JISP::ListElementToStringConcise(&element2,&testString);
-        ret = ret && (testString == "(\"string1\" \"string2\")");
-
-        // (car ("string1" "string2") = "string1"
-        JISP::JISPCAR(&element2,&element3);
-        JISP::ListElementToStringConcise(&element3,&testString);
-        ret = ret && (testString == "\"string1\"");
-        JISP::ListElementToStringVerbose(&element3,&testString);
-        ret = ret && (testString == "\"string1\"");
-
-        // (cdr ("string1" "string2") = ("string2");
-        JISP::JISPCDR(&element2,&element3);
-        JISP::ListElementToStringConcise(&element3,&testString);
-        ret = ret && (testString == "(\"string2\")");
-        JISP::ListElementToStringVerbose(&element3,&testString);
-        ret = ret && (testString == "(\"string2\" . ())");
-
-
-        //(cons ("string1" "string2") "string3")) = (("string1")("string2") . "string3")
-        JISP::CreateListElement(jleTypeString_k,"\"string3\"",(unsigned int)strlen("\"string3\"")+1,&element3);
-        JISP::JISPCons(&element2,&element3,&element1);
-
-        JISP::ListElementToStringVerbose(&element1,&testString);
-        ret = ret && (testString == "((\"string1\" . (\"string2\" . ())) . \"string3\")");
-        JISP::ListElementToStringConcise(&element1,&testString);
-        ret = ret && (testString == "((\"string1\" \"string2\") . \"string3\")");
-
-        //(cons "string3" ("string1" "string2")) = ("string3" "string1" "string2")
-        JISP::JISPCons(&element3,&element2,&element1);
-
-        JISP::ListElementToStringConcise(&element1,&testString);
-        ret = ret && (testString == "(\"string3\" \"string1\" \"string2\")");
-
-        JISP::StringToListElement("(A)",&element1);
-        JISP::ListElementToStringVerbose(&element1,&testString);
-        ret = ret && (testString == "(A . ())");
-
-        JISP::StringToListElement("(A B)",&element1);
-        JISP::ListElementToStringVerbose(&element1,&testString);
-        ret = ret && (testString == "(A . (B . ()))");
-
-        JISP::StringToListElement("((A) B)",&element1);
-        JISP::ListElementToStringVerbose(&element1,&testString);
-        ret = ret && (testString == "((A . ()) . (B . ()))");
-
-        JISP::StringToListElement("(A (B))",&element1);
-        JISP::ListElementToStringVerbose(&element1,&testString);
-        ret = ret && (testString == "(A . ((B . ()) . ()))");
-        
-        JISP::StringToListElement("(A (B) (C D) E F (G (H I) J))",&element1);
-        JISP::ListElementToStringConcise(&element1,&testString);
-        ret = ret && (testString == "(A (B) (C D) E F (G (H I) J))");
-
-        JISP::StringToListElement("(((((A)B)C)D)E)",&element1);
-        JISP::ListElementToStringVerbose(&element1,&testString);
-        ret = ret && (testString == "(((((A . ()) . (B . ())) . (C . ())) . (D . ())) . (E . ()))");
-        JISP::ListElementToStringConcise(&element1,&testString);
-        ret = ret && (testString == "(((((A) B) C) D) E)");
-
-        JISP::StringToListElement("'(A (B) (C D) (E (F) G))",&element1);
-        JISP::ListElementToStringConcise(&element1,&testString);
-        ret = ret && (testString == "' (A (B) (C D) (E (F) G))");
-
-        JISP::StringToListElement("'(A B C)",&element1);
-        JISP::ListElementToStringVerbose(&element1,&testString);
-        ret = ret && (testString == "(quote (A . (B . (C . ()))))");
-
-        JISP::StringToListElement("'(A B '(C D) E)",&element1);
-        JISP::ListElementToStringConcise(&element1,&testString);
-        ret = ret && (testString == "' (A B ' (C D) E)");
-
-        JISP::ListElementToStringVerbose(&element1,&testString);
-        ret = ret && (testString == "(quote (A . (B . ((quote (C . (D . ()))) . (E . ())))))");
-
-        JISP::StringToListElement("'(A B C D)",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-        ret = ret && (testString == "(A B C D)");
-
-        JISP::StringToListElement("(cons 'A '(B))",&element1);
-        JISP::ListElementToStringConcise(&element1,&testString);
-        ret = ret && (testString == "(cons ' A ' (B))");
-        testString.clear();
-
-        // Evaluation
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-        ret = ret && (testString == "(A B)");
-
-        JISP::StringToListElement("(car '(A B))",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-        ret = ret && (testString == "A");
-
-        JISP::StringToListElement("(car '((A B) C D))",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringVerbose(&element2,&testString);
-        ret = ret && (testString == "(A . (B . ()))");
-
-        JISP::StringToListElement("(cdr '((A B) C D))",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringVerbose(&element2,&testString);
-        ret = ret && (testString == "(C . (D . ()))");
-
-        JISP::StringToListElement("(car (cdr '((A B) C D)))",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringVerbose(&element2,&testString);
-        ret = ret && (testString == "C");
-
-        JISP::StringToListElement("(cdr (car '((A B) C D)))",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-        ret = ret && (testString == "(B)");
-
-        JISP::StringToListElement("(cons (car '(1 2 3 4))(cdr '(1 2 3 4)))",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-        ret = ret && (testString == "(1 2 3 4)");
-
-        JISP::StringToListElement("(eq? 1 1)",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-        ret = ret && (testString == "#t");
-        JISP::ListElementToStringVerbose(&element2,&testString);
-        ret = ret && (testString == "#t");
-
-        JISP::StringToListElement("(eq? 1 2)",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-        ret = ret && (testString == "#f");
-        JISP::ListElementToStringVerbose(&element2,&testString);
-        ret = ret && (testString == "#f");
-
-        JISP::StringToListElement("(+ 1 2)",&element1);
-        JISP::ListElementToStringConcise(&element1,&testString);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-        ret = ret && (testString == "3");
-
-        JISP::StringToListElement("(- (+ 3 4) (/ 4 4) (* 2 2.0))",&element1);
-        JISP::ListElementToStringConcise(&element1,&testString);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-        ret = ret && (testString == "2.000000");
-        
-        JISP::StringToListElement("(/ 120 4 2)",&element1);
-        JISP::ListElementToStringConcise(&element1,&testString);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-        ret = ret && (testString == "15");
-
-        JISP::StringToListElement("(define a 1)",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::StringToListElement("a",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-
-        ret = ret && (testString == "1");
-
-        JISP::StringToListElement("(define b a)",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::StringToListElement("b",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-
-        ret = ret && (testString == "1");
-
-        JISP::StringToListElement("(define b 2)",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::StringToListElement("b",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-        
-        ret = ret && (testString == "2");
-
-        JISP::StringToListElement("a",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-        
-        ret = ret && (testString == "1");
-
-
-        JISP::StringToListElement("(+ a 1)",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-
-        ret = ret && (testString == "2");
-
-        JISP::StringToListElement("(define plus +)",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::StringToListElement("(plus 1 2)",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-
-        ret = ret && (testString == "3");
-
-        JISP::StringToListElement("(define doubleplus plus)",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::StringToListElement("(doubleplus 3 4)",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-
-        ret = ret && (testString == "7");
-        
-        JISP::StringToListElement("()",&element1);
-
-        JISP::StringToListElement("'()",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element1,&testString);
-        
-        ret = ret && (testString == "' ()");
-
-        JISP::ListElementToStringConcise(&element2,&testString);
-
-        ret = ret && (testString == "()");
-
-        JISP::StringToListElement("(atom? 1)",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-
-        ret = ret && (testString == "#t");
-
-        JISP::StringToListElement("(atom? debbie)",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-        
-        ret = ret && (testString == "#f");
-
-        JISP::StringToListElement("(atom? 'harry)",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-        
-        ret = ret && (testString == "#t");
-
-        JISP::StringToListElement("(null? 1)",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-        
-        ret = ret && (testString == "#f");
-        
-        JISP::StringToListElement("(null? '(a list))",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-        
-        ret = ret && (testString == "#f");
-
-        JISP::StringToListElement("(null? '())",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-        
-        ret = ret && (testString == "#t");
-
-        JISP::StringToListElement("(list? 0)",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-        
-        ret = ret && (testString == "#f");
-
-        JISP::StringToListElement("(list? (a b))",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-        
-        ret = ret && (testString == "#f");
-
-        JISP::StringToListElement("(list? '(a b))",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-        
-        ret = ret && (testString == "#t");
-
-        JISP::StringToListElement("(list? '())",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-        
-        ret = ret && (testString == "#t");
-
-        // illegal syntax ()
-        JISP::StringToListElement("(list? ())",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-
-        ret = ret && (testString == "#f");
-
-        // cond
-        JISP::StringToListElement("(cond ((eq? 1 1) 1) (else 0))",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-
-        ret = ret && (testString == "1");
-
-        JISP::StringToListElement("(cond ((eq? 1 2) 1) (else 0))",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-
-        ret = ret && (testString == "0");
-
-        JISP::StringToListElement("(cond ((eq? 1 1) (+ 1 2)) (else (- 5 3)))",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-
-        ret = ret && (testString == "3");
-
-        JISP::StringToListElement("(cond ((eq? 1 2) (+ 1 2)) (else (- 5 3)))",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-
-        ret = ret && (testString == "2");
-
-        JISP::StringToListElement("(cond ((eq? 1 2) (+ 1 2)) ((eq? 3 3) (+ 1 5)) (else (- 5 3)))",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-
-        ret = ret && (testString == "6");
-
-        outputString.clear();
-        JISP::StringToListElement("(cond ((eq? 1 2) (+ 1 2)) (else (- 5 3)) ((eq? 3 3) (+ 1 5)))",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-
-        ret = ret && (outputString == "Error - misplaced keyword else");
-
-        outputString.clear();
-        JISP::StringToListElement("(cond ition)",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-
-        ret = ret && (outputString == "Error - invalid syntax");
-
-        outputString.clear();
-        JISP::StringToListElement("(cond (ition al))",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-
-        ret = ret && (outputString == "Error - invalid syntax");
-
-        JISP::StringToListElement("((lambda (x) (+ x 1)) 2)",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-
-        ret = ret && (testString == "3");
-
-        JISP::StringToListElement("((lambda (a b) (eq? a (+ b 1))) 3 2)",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-
-        ret = ret && (testString == "#t");
-
-        JISP::StringToListElement("(define a (lambda (x) (+ x 1)))",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::StringToListElement("(a 2)",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-
-        ret = ret && (testString == "3");
-
-        // recursion
-        JISP::StringToListElement("(define a (lambda (x) (cond ((eq? x 1) 1) (else (* x (a (- x 1)))))))",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::StringToListElement("(a 4)",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
-        JISP::ListElementToStringConcise(&element2,&testString);
-
-        ret = ret && (testString == "24");
-
-        DestroyJISPContext(context);
-        return ret;
-    }
-    /////////////////////////////
 
     struct ListElementIterator_t
     {
@@ -726,6 +283,7 @@ namespace JISP
     typedef std::map<std::string,ListElement_t> JISPDefineMap_t;
 
     typedef std::stack<JISPDefineMap_t>  JISPLetStack_t;
+    /////////////////////////////
 
     struct JISPContext_t
     {
@@ -738,23 +296,27 @@ namespace JISP
 
         bool active_;
     };
+    /////////////////////////////
 
     bool GetJISPContextIsActive(JISPContext_t *context)
     {
         return context->active_;
     }
+    /////////////////////////////
 
     void SetJISPContextErrorHandler(JISPContext_t *context,JISPOutputHandler_t eh,void *handlerData)
     {
         context->errorHandler_ = eh;
         context->errorHandlerData_ = handlerData;
     }
+    /////////////////////////////
 
     void SetJISPContextOutputHandler(JISPContext_t *context,JISPOutputHandler_t oh,void *handlerData)
     {
         context->outputHandler_ = oh;
         context->outputHandlerData_ = handlerData;
     }
+    /////////////////////////////
 
     void JISPOutput(JISPContext_t *context,const char *text)
     {
@@ -763,6 +325,7 @@ namespace JISP
             (*(context->outputHandler_))(text,context->outputHandlerData_);
         }
     }
+    /////////////////////////////
 
     void JISPError(JISPContext_t *context,const char *errorMsg)
     {
@@ -771,9 +334,6 @@ namespace JISP
             (*(context->errorHandler_))(errorMsg,context->errorHandlerData_);
         }
     }
-
-
-
     /////////////////////////////
 
     bool JISPConsFunction(JISPContext_t *context,const char *fn,const ListElementVector_t *parameters,ListElement_t *output)
@@ -931,11 +491,6 @@ namespace JISP
                             hasElse = true;
                         }
                     }
-                    else
-                    {
-                        JISPError(context,"Error - invalid syntax");
-                        return false;
-                    }
                 }
                 else if (it->type_ != JISP::jleTypeList_k)
                 {
@@ -974,64 +529,6 @@ namespace JISP
     }
     /////////////////////////////
 
-    typedef std::map<std::string,ListElement_t> LambdaParameterMap_t;
-
-    void JISPBindLambdaParameters(ListElement_t *input,LambdaParameterMap_t *params,ListElement_t *output)
-    {
-        ListElement_t inputCar,inputCdr;
-
-        ListElement_t localOutput;
-
-        JISPCAR(input,&inputCar);
-        JISPCDR(input,&inputCdr);
-
-        ListElementIterator_t *it = IteratorFromListElement(&inputCar);
-
-        ListElementVector_t leVector;
-        while (it != 0 && it->carLen_ > 0)
-        {
-            ListElement_t *pelem = 0;
-            ListElement_t listExpression;
-            if (it->type_ == jleTypeList_k)
-            {
-                JISPBindLambdaParameters(&inputCar,params,&listExpression);
-                pelem = &listExpression;
-            }
-            else if (it->type_ == jleTypeIdentifier_k)
-            {
-                std::string name = reinterpret_cast<char *>(it->data_);
-                LambdaParameterMap_t::iterator lpIt = params->find(name);
-                if (lpIt != params->end())
-                {
-                    pelem = &(lpIt->second);
-                }
-                else
-                {
-                    pelem = &inputCar;
-                }
-            }
-            else
-            {
-                pelem = &inputCar;
-            }
-
-            leVector.push_back(*pelem);
-
-
-            JISPCAR(&inputCdr,&inputCar);
-            JISPCDR(&inputCdr,&inputCdr);
-
-            it = IteratorFromListElement(&inputCar);
-        }
-
-        CreateListElement(jleTypeList_k,0,0,output);
-
-        for (ListElementVector_t::reverse_iterator it = leVector.rbegin();it!=leVector.rend();++it)
-        {
-            JISPCons(&(*it),output,output);
-        }
-    }
-
 
     bool JISPApplyLambdaFunction(JISPContext_t *context,const ListElement_t *lambdaFunc,const ListElementVector_t *parameters,ListElement_t *output)
     {
@@ -1054,8 +551,6 @@ namespace JISP
             JISPError(context,"Error - invalid syntax");
             return false;
         }
-
-
 
         std::vector<std::string> paramNames;
 
@@ -1080,14 +575,14 @@ namespace JISP
             return false;
         }
 
-        LambdaParameterMap_t lambdaParameterMap;
+        JISPDefineMap_t parameterMap;
 
         size_t i,iend;
         for (i=0,iend=paramNames.size();i<iend;++i)
         {
             ListElement_t evaluatedParameter;
             EvaluateListElement(context,&(*parameters)[i],&evaluatedParameter);
-            lambdaParameterMap.insert(LambdaParameterMap_t::value_type(paramNames[i],evaluatedParameter));
+            parameterMap.insert(JISPDefineMap_t::value_type(paramNames[i],evaluatedParameter));
         }
 
         ListElement_t functionExpression;
@@ -1095,10 +590,10 @@ namespace JISP
         JISPCDR(&functionExpression,&functionExpression);
         JISPCAR(&functionExpression,&functionExpression);
         
-        ListElement_t boundFunction;
-        JISPBindLambdaParameters(&functionExpression,&lambdaParameterMap,&boundFunction);
-
-        return EvaluateListElement(context,&boundFunction,output);
+        context->letStack_.push(parameterMap);
+        bool ret = EvaluateListElement(context,&functionExpression,output);
+        context->letStack_.pop();
+        return ret;
     }
     /////////////////////////////
 
@@ -1636,7 +1131,7 @@ namespace JISP
                 {
                     result = result && (numbers[i].number_.int_ <= numbers[i+1].number_.int_);
                 }
-                if (fnStr == "eq?")
+                if (fnStr == "eq?" || fnStr == "=")
                 {
                     result = result && (numbers[i].number_.int_ == numbers[i+1].number_.int_);
                 }
@@ -1660,7 +1155,7 @@ namespace JISP
                 {
                     result = result && (numbers[i].number_.float_ <= numbers[i+1].number_.float_);
                 }
-                if (fnStr == "eq?")
+                if (fnStr == "eq?" || fnStr == "=")
                 {
                     result = result && (numbers[i].number_.float_ == numbers[i+1].number_.float_);
                 }
@@ -1833,6 +1328,7 @@ namespace JISP
         ret->functionMap_.insert(JISPFunctionMap_t::value_type("car",JISPCarFunction));
         ret->functionMap_.insert(JISPFunctionMap_t::value_type("cdr",JISPCdrFunction));
         ret->functionMap_.insert(JISPFunctionMap_t::value_type("eq?",JISPBinaryComparison));
+        ret->functionMap_.insert(JISPFunctionMap_t::value_type("=",JISPBinaryComparison));
         ret->functionMap_.insert(JISPFunctionMap_t::value_type(">",JISPBinaryComparison));
         ret->functionMap_.insert(JISPFunctionMap_t::value_type(">=",JISPBinaryComparison));
         ret->functionMap_.insert(JISPFunctionMap_t::value_type("<",JISPBinaryComparison));

@@ -21,6 +21,8 @@ int main(int argc,char **argv)
     JISP::SetJISPContextErrorHandler(context,JISPOutputHandlerConsole,0);
     JISP::SetJISPContextOutputHandler(context,JISPOutputHandlerConsole,0);
 
+    std::cout << "JISP Scheme Version 0.0.0" << std::endl;
+    std::cout << "Copyright (c) 2010 - Jason Shankel" << std::endl << std::endl;
 
     std::cout << ">";
     while (JISP::GetJISPContextIsActive(context) && getline(std::cin,str))

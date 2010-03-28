@@ -22,8 +22,42 @@ namespace JISP
                 ((atom? (car l)) (lat? (cdr l))) \
                 (else #f) \
             ) \
-          ))"
+          ))",
+
+        "(define not (lambda (op) \
+            (cond \
+                (op #f) \
+                (else #t) \
+             ) \
+             ))",
                 
+        "(define and (lambda (op1 op2) \
+            (cond \
+                ((not op1) #f) \
+                ((not op2) #f) \
+                (else #t) \
+                )\
+           ))",
+              
+        "(define or (lambda (op1 op2) \
+            (cond \
+                (op1 #t) \
+                (op2 #t) \
+                (else #f) \
+            )\
+            ))",
+
+        "(define xor (lambda (op1 op2) \
+            (and (or op1 op2) (not (and op1 op2))) \
+            ))",
+
+        "(define nor (lambda (op1 op2) \
+            (not (or op1 op2)) \
+            ))",
+
+        "(define nand (lambda (op1 op2) \
+            (not (and op1 op2)) \
+            ))"
     };
 
     bool BuildStandardFunctions(JISPContext_t *context)
