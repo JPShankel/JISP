@@ -118,6 +118,9 @@
 				Name="Source"
 				Filter="">
 				<File
+					RelativePath="..\..\JISPEvaluate\JISPFunctions.cpp">
+				</File>
+				<File
 					RelativePath="..\..\JISPEvaluate\JISPList.cpp">
 				</File>
 			</Filter>

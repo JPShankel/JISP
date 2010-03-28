@@ -1,7 +1,7 @@
 /*
 ** JISPList.cpp
 **
-** JISPList.h/cpp - stack machine for evaluation
+** JISPList.h/cpp - JISP list core functions and evaluator
 **
 ** Copyright (c) 2009 - Jason Shankel
 */
@@ -12,7 +12,7 @@
 #include <iostream>
 #include <map>
 #include <stack>
-
+#include <assert.h>
 
 
 namespace JISP
@@ -447,6 +447,15 @@ namespace JISP
         JISP::ListElementToStringConcise(&element2,&testString);
 
         ret = ret && (testString == "3");
+
+        // recursion
+        JISP::StringToListElement("(define a (lambda (x) (cond ((eq? x 1) 1) (else (* x (a (- x 1)))))))",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::StringToListElement("(a 4)",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+
+        ret = ret && (testString == "24");
 
         DestroyJISPContext(context);
         return ret;
@@ -1838,6 +1847,10 @@ namespace JISP
         ret->functionMap_.insert(JISPFunctionMap_t::value_type("null?",JISPUnaryQuery));
         ret->functionMap_.insert(JISPFunctionMap_t::value_type("exit",JISPSystemFunction));
         ret->functionMap_.insert(JISPFunctionMap_t::value_type("cond",JISPCondFunction));
+
+        bool bsf = BuildStandardFunctions(ret);
+        assert(bsf);
+
 
         return ret;
     }
