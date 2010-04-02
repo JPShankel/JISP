@@ -46,7 +46,11 @@ const unsigned int jleTypeUnknown_k =10;
 %token OPENPAREN
 %token CLOSEDPAREN
 
+%token OPENBRACKET
+%token CLOSEDBRACKET
+
 %token QUOTE
+
 
 
 %%
@@ -58,6 +62,8 @@ statement: list {$$=$1;}
 
 list: OPENPAREN list_elements CLOSEDPAREN {$$=EndJISPElementList($2);}
 | OPENPAREN CLOSEDPAREN { $$=NullJISPList(); }
+| OPENBRACKET list_elements CLOSEDBRACKET {$$=EndJISPElementList($2);}
+| OPENBRACKET CLOSEDBRACKET { $$=NullJISPList(); }
 ;
 
 list_elements : list_element {$$=BeginJISPElementList($1);}

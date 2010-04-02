@@ -513,6 +513,45 @@ namespace JISP
 
         ret = ret && (testString == "#f");
 
+        JISP::StringToListElement("(let ([x 1]) (+ x 2))",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+
+        ret = ret && (testString == "3");
+        
+
+        // let, let*, letrec, letrec*
+        JISP::StringToListElement("(let ([x 1]) (+ x 1) (+ x 2) (+ x 3))",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+
+        ret = ret && (testString == "4");
+
+        JISP::StringToListElement("(let ([x 3]) (let ((y x)) (+ y 2)))",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+
+        ret = ret && (testString == "5");
+        
+        JISP::StringToListElement("(let ([x 1][y 2]) (let ([y x][x y]) (+ x 2)))",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+
+        ret = ret && (testString == "4");
+ 
+        JISP::StringToListElement("(let ([x 1][y 2]) (let ([y x][x y]) (+ x y)))",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+
+        ret = ret && (testString == "3");
+        
+        JISP::StringToListElement("(let ([x 1][y 2]) (let* ([y x][x y]) (+ x y)))",&element1);
+//        JISP::StringToListElement("(let* ([x 1][y 2])  (* x y))",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+
+        ret = ret && (testString == "2");
+
         DestroyJISPContext(context);
         return ret;
     }

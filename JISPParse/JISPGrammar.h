@@ -48,7 +48,9 @@
      CHARACTER = 264,
      OPENPAREN = 265,
      CLOSEDPAREN = 266,
-     QUOTE = 267
+     OPENBRACKET = 267,
+     CLOSEDBRACKET = 268,
+     QUOTE = 269
    };
 #endif
 

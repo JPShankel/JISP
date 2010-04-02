@@ -141,7 +141,9 @@ const unsigned int jleTypeUnknown_k =10;
      CHARACTER = 264,
      OPENPAREN = 265,
      CLOSEDPAREN = 266,
-     QUOTE = 267
+     OPENBRACKET = 267,
+     CLOSEDBRACKET = 268,
+     QUOTE = 269
    };
 #endif
 
@@ -159,7 +161,7 @@ typedef int YYSTYPE;
 
 
 /* Line 264 of yacc.c  */
-#line 163 "..\\..\\JISPParse\\JISPGrammar.c"
+#line 165 "..\\..\\JISPParse\\JISPGrammar.c"
 
 #ifdef short
 # undef short
@@ -372,22 +374,22 @@ union yyalloc
 #endif
 
 /* YYFINAL -- State number of the termination state.  */
-#define YYFINAL  22
+#define YYFINAL  25
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   58
+#define YYLAST   82
 
 /* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  13
+#define YYNTOKENS  15
 /* YYNNTS -- Number of nonterminals.  */
 #define YYNNTS  7
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  19
+#define YYNRULES  21
 /* YYNRULES -- Number of states.  */
-#define YYNSTATES  26
+#define YYNSTATES  30
 
 /* YYTRANSLATE(YYLEX) -- Bison symbol number corresponding to YYLEX.  */
 #define YYUNDEFTOK  2
-#define YYMAXUTOK   267
+#define YYMAXUTOK   269
 
 #define YYTRANSLATE(YYX)						\
   ((unsigned int) (YYX) <= YYMAXUTOK ? yytranslate[YYX] : YYUNDEFTOK)
@@ -421,7 +423,7 @@ static const yytype_uint8 yytranslate[] =
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
-       5,     6,     7,     8,     9,    10,    11,    12
+       5,     6,     7,     8,     9,    10,    11,    12,    13,    14
 };
 
 #if YYDEBUG
@@ -429,25 +431,28 @@ static const yytype_uint8 yytranslate[] =
    YYRHS.  */
 static const yytype_uint8 yyprhs[] =
 {
-       0,     0,     3,     5,     8,    10,    14,    17,    19,    22,
-      24,    26,    29,    31,    33,    35,    37,    39,    41,    43
+       0,     0,     3,     5,     8,    10,    14,    17,    21,    24,
+      26,    29,    31,    33,    36,    38,    40,    42,    44,    46,
+      48,    50
 };
 
 /* YYRHS -- A `-1'-separated list of the rules' RHS.  */
 static const yytype_int8 yyrhs[] =
 {
-      14,     0,    -1,    15,    -1,    12,    14,    -1,    17,    -1,
-      10,    16,    11,    -1,    10,    11,    -1,    17,    -1,    16,
-      17,    -1,    18,    -1,    15,    -1,    12,    17,    -1,    19,
-      -1,     7,    -1,     8,    -1,     6,    -1,     3,    -1,     4,
-      -1,     5,    -1,     9,    -1
+      16,     0,    -1,    17,    -1,    14,    16,    -1,    19,    -1,
+      10,    18,    11,    -1,    10,    11,    -1,    12,    18,    13,
+      -1,    12,    13,    -1,    19,    -1,    18,    19,    -1,    20,
+      -1,    17,    -1,    14,    19,    -1,    21,    -1,     7,    -1,
+       8,    -1,     6,    -1,     3,    -1,     4,    -1,     5,    -1,
+       9,    -1
 };
 
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    54,    54,    55,    56,    59,    60,    63,    64,    67,
-      68,    69,    73,    74,    75,    76,    79,    80,    81,    82
+       0,    58,    58,    59,    60,    63,    64,    65,    66,    69,
+      70,    73,    74,    75,    79,    80,    81,    82,    85,    86,
+      87,    88
 };
 #endif
 
@@ -458,8 +463,9 @@ static const char *const yytname[] =
 {
   "$end", "error", "$undefined", "INTEGER", "FLOAT", "RATIONAL",
   "IDENTIFIER", "STRING", "BOOLEAN", "CHARACTER", "OPENPAREN",
-  "CLOSEDPAREN", "QUOTE", "$accept", "statement", "list", "list_elements",
-  "list_element", "terminal_element", "number", 0
+  "CLOSEDPAREN", "OPENBRACKET", "CLOSEDBRACKET", "QUOTE", "$accept",
+  "statement", "list", "list_elements", "list_element", "terminal_element",
+  "number", 0
 };
 #endif
 
@@ -469,22 +475,24 @@ static const char *const yytname[] =
 static const yytype_uint16 yytoknum[] =
 {
        0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
-     265,   266,   267
+     265,   266,   267,   268,   269
 };
 # endif
 
 /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
 static const yytype_uint8 yyr1[] =
 {
-       0,    13,    14,    14,    14,    15,    15,    16,    16,    17,
-      17,    17,    18,    18,    18,    18,    19,    19,    19,    19
+       0,    15,    16,    16,    16,    17,    17,    17,    17,    18,
+      18,    19,    19,    19,    20,    20,    20,    20,    21,    21,
+      21,    21
 };
 
 /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
 static const yytype_uint8 yyr2[] =
 {
-       0,     2,     1,     2,     1,     3,     2,     1,     2,     1,
-       1,     2,     1,     1,     1,     1,     1,     1,     1,     1
+       0,     2,     1,     2,     1,     3,     2,     3,     2,     1,
+       2,     1,     1,     2,     1,     1,     1,     1,     1,     1,
+       1,     1
 };
 
 /* YYDEFACT[STATE-NAME] -- Default rule to reduce with in state
@@ -492,31 +500,31 @@ static const yytype_uint8 yyr2[] =
    means the default is an error.  */
 static const yytype_uint8 yydefact[] =
 {
-       0,    16,    17,    18,    15,    13,    14,    19,     0,     0,
-       0,     2,     4,     9,    12,     6,     0,    10,     0,     7,
-       3,     4,     1,    11,     5,     8
+       0,    18,    19,    20,    17,    15,    16,    21,     0,     0,
+       0,     0,     2,     4,    11,    14,     6,     0,    12,     0,
+       9,     8,     0,     3,     4,     1,    13,     5,    10,     7
 };
 
 /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-      -1,    10,    17,    18,    12,    13,    14
+      -1,    11,    18,    19,    20,    14,    15
 };
 
 /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
    STATE-NUM.  */
-#define YYPACT_NINF -9
+#define YYPACT_NINF -2
 static const yytype_int8 yypact[] =
 {
-      28,    -9,    -9,    -9,    -9,    -9,    -9,    -9,     8,    28,
-       2,    -9,    -9,    -9,    -9,    -9,    38,    -9,    18,    -9,
-      -9,    -9,    -9,    -9,    -9,    -9
+      56,    -2,    -2,    -2,    -2,    -2,    -2,    -2,    20,    -1,
+      56,     1,    -2,    -2,    -2,    -2,    -2,    68,    -2,    32,
+      -2,    -2,    44,    -2,    -2,    -2,    -2,    -2,    -2,    -2
 };
 
 /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-      -9,    -6,    49,    -9,    -8,    -9,    -9
+      -2,     4,    45,     6,     0,    -2,    -2
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
@@ -526,22 +534,28 @@ static const yytype_int8 yypgoto[] =
 #define YYTABLE_NINF -1
 static const yytype_uint8 yytable[] =
 {
-      19,    21,    22,    20,     0,     0,     0,     0,    23,     0,
-      25,     1,     2,     3,     4,     5,     6,     7,     8,    15,
-      16,     1,     2,     3,     4,     5,     6,     7,     8,    24,
-      16,     1,     2,     3,     4,     5,     6,     7,     8,     0,
-       9,     1,     2,     3,     4,     5,     6,     7,     8,    11,
-      16,     0,     0,     0,     0,     0,     0,     0,    11
+      13,    25,     1,     2,     3,     4,     5,     6,     7,     8,
+      24,     9,    21,    17,    23,    22,     0,    26,     0,    28,
+       0,     0,    28,     1,     2,     3,     4,     5,     6,     7,
+       8,    16,     9,     0,    17,     1,     2,     3,     4,     5,
+       6,     7,     8,    27,     9,    12,    17,     1,     2,     3,
+       4,     5,     6,     7,     8,    12,     9,    29,    17,     1,
+       2,     3,     4,     5,     6,     7,     8,     0,     9,     0,
+      10,     1,     2,     3,     4,     5,     6,     7,     8,     0,
+       9,     0,    17
 };
 
 static const yytype_int8 yycheck[] =
 {
-       8,     9,     0,     9,    -1,    -1,    -1,    -1,    16,    -1,
-      18,     3,     4,     5,     6,     7,     8,     9,    10,    11,
-      12,     3,     4,     5,     6,     7,     8,     9,    10,    11,
-      12,     3,     4,     5,     6,     7,     8,     9,    10,    -1,
-      12,     3,     4,     5,     6,     7,     8,     9,    10,     0,
-      12,    -1,    -1,    -1,    -1,    -1,    -1,    -1,     9
+       0,     0,     3,     4,     5,     6,     7,     8,     9,    10,
+      10,    12,    13,    14,    10,     9,    -1,    17,    -1,    19,
+      -1,    -1,    22,     3,     4,     5,     6,     7,     8,     9,
+      10,    11,    12,    -1,    14,     3,     4,     5,     6,     7,
+       8,     9,    10,    11,    12,     0,    14,     3,     4,     5,
+       6,     7,     8,     9,    10,    10,    12,    13,    14,     3,
+       4,     5,     6,     7,     8,     9,    10,    -1,    12,    -1,
+      14,     3,     4,     5,     6,     7,     8,     9,    10,    -1,
+      12,    -1,    14
 };
 
 /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
@@ -549,8 +563,8 @@ static const yytype_int8 yycheck[] =
 static const yytype_uint8 yystos[] =
 {
        0,     3,     4,     5,     6,     7,     8,     9,    10,    12,
-      14,    15,    17,    18,    19,    11,    12,    15,    16,    17,
-      14,    17,     0,    17,    11,    17
+      14,    16,    17,    19,    20,    21,    11,    14,    17,    18,
+      19,    13,    18,    16,    19,     0,    19,    11,    19,    13
 };
 
 #define yyerrok		(yyerrstatus = 0)
@@ -1364,133 +1378,147 @@ yyreduce:
         case 2:
 
 /* Line 1455 of yacc.c  */
-#line 54 "..\\..\\JISPParse\\JISPGrammar.y"
+#line 58 "..\\..\\JISPParse\\JISPGrammar.y"
     {(yyval)=(yyvsp[(1) - (1)]);;}
     break;
 
   case 3:
 
 /* Line 1455 of yacc.c  */
-#line 55 "..\\..\\JISPParse\\JISPGrammar.y"
+#line 59 "..\\..\\JISPParse\\JISPGrammar.y"
     {(yyval)=AddJISPElement(jleTypeQuoted_k,(yyvsp[(2) - (2)]));;}
     break;
 
   case 4:
 
 /* Line 1455 of yacc.c  */
-#line 56 "..\\..\\JISPParse\\JISPGrammar.y"
+#line 60 "..\\..\\JISPParse\\JISPGrammar.y"
     {(yyval)=(yyvsp[(1) - (1)]);;}
     break;
 
   case 5:
 
 /* Line 1455 of yacc.c  */
-#line 59 "..\\..\\JISPParse\\JISPGrammar.y"
+#line 63 "..\\..\\JISPParse\\JISPGrammar.y"
     {(yyval)=EndJISPElementList((yyvsp[(2) - (3)]));;}
     break;
 
   case 6:
 
 /* Line 1455 of yacc.c  */
-#line 60 "..\\..\\JISPParse\\JISPGrammar.y"
+#line 64 "..\\..\\JISPParse\\JISPGrammar.y"
     { (yyval)=NullJISPList(); ;}
     break;
 
   case 7:
 
 /* Line 1455 of yacc.c  */
-#line 63 "..\\..\\JISPParse\\JISPGrammar.y"
-    {(yyval)=BeginJISPElementList((yyvsp[(1) - (1)]));;}
+#line 65 "..\\..\\JISPParse\\JISPGrammar.y"
+    {(yyval)=EndJISPElementList((yyvsp[(2) - (3)]));;}
     break;
 
   case 8:
 
 /* Line 1455 of yacc.c  */
-#line 64 "..\\..\\JISPParse\\JISPGrammar.y"
-    {(yyval)=AddJISPElementToList((yyvsp[(1) - (2)]),(yyvsp[(2) - (2)]));;}
+#line 66 "..\\..\\JISPParse\\JISPGrammar.y"
+    { (yyval)=NullJISPList(); ;}
     break;
 
   case 9:
 
 /* Line 1455 of yacc.c  */
-#line 67 "..\\..\\JISPParse\\JISPGrammar.y"
-    {(yyval)=(yyvsp[(1) - (1)]);;}
+#line 69 "..\\..\\JISPParse\\JISPGrammar.y"
+    {(yyval)=BeginJISPElementList((yyvsp[(1) - (1)]));;}
     break;
 
   case 10:
 
 /* Line 1455 of yacc.c  */
-#line 68 "..\\..\\JISPParse\\JISPGrammar.y"
-    {(yyval)=(yyvsp[(1) - (1)]);;}
+#line 70 "..\\..\\JISPParse\\JISPGrammar.y"
+    {(yyval)=AddJISPElementToList((yyvsp[(1) - (2)]),(yyvsp[(2) - (2)]));;}
     break;
 
   case 11:
-
-/* Line 1455 of yacc.c  */
-#line 69 "..\\..\\JISPParse\\JISPGrammar.y"
-    {(yyval)=AddJISPElement(jleTypeQuoted_k,(yyvsp[(2) - (2)]));;}
-    break;
-
-  case 12:
 
 /* Line 1455 of yacc.c  */
 #line 73 "..\\..\\JISPParse\\JISPGrammar.y"
     {(yyval)=(yyvsp[(1) - (1)]);;}
     break;
 
-  case 13:
+  case 12:
 
 /* Line 1455 of yacc.c  */
 #line 74 "..\\..\\JISPParse\\JISPGrammar.y"
-    {(yyval)=AddJISPElement(jleTypeString_k,(yyvsp[(1) - (1)]));;}
+    {(yyval)=(yyvsp[(1) - (1)]);;}
+    break;
+
+  case 13:
+
+/* Line 1455 of yacc.c  */
+#line 75 "..\\..\\JISPParse\\JISPGrammar.y"
+    {(yyval)=AddJISPElement(jleTypeQuoted_k,(yyvsp[(2) - (2)]));;}
     break;
 
   case 14:
 
 /* Line 1455 of yacc.c  */
-#line 75 "..\\..\\JISPParse\\JISPGrammar.y"
-    {(yyval)=AddJISPElement(jleTypeBoolean_k,(yyvsp[(1) - (1)]));;}
+#line 79 "..\\..\\JISPParse\\JISPGrammar.y"
+    {(yyval)=(yyvsp[(1) - (1)]);;}
     break;
 
   case 15:
 
 /* Line 1455 of yacc.c  */
-#line 76 "..\\..\\JISPParse\\JISPGrammar.y"
-    {(yyval)=AddJISPElement(jleTypeIdentifier_k,(yyvsp[(1) - (1)]));;}
+#line 80 "..\\..\\JISPParse\\JISPGrammar.y"
+    {(yyval)=AddJISPElement(jleTypeString_k,(yyvsp[(1) - (1)]));;}
     break;
 
   case 16:
 
 /* Line 1455 of yacc.c  */
-#line 79 "..\\..\\JISPParse\\JISPGrammar.y"
-    {(yyval)=AddJISPElement(jleTypeInteger_k,(yyvsp[(1) - (1)]));;}
+#line 81 "..\\..\\JISPParse\\JISPGrammar.y"
+    {(yyval)=AddJISPElement(jleTypeBoolean_k,(yyvsp[(1) - (1)]));;}
     break;
 
   case 17:
 
 /* Line 1455 of yacc.c  */
-#line 80 "..\\..\\JISPParse\\JISPGrammar.y"
-    {(yyval)=AddJISPElement(jleTypeFloat_k,(yyvsp[(1) - (1)]));;}
+#line 82 "..\\..\\JISPParse\\JISPGrammar.y"
+    {(yyval)=AddJISPElement(jleTypeIdentifier_k,(yyvsp[(1) - (1)]));;}
     break;
 
   case 18:
 
 /* Line 1455 of yacc.c  */
-#line 81 "..\\..\\JISPParse\\JISPGrammar.y"
-    {(yyval)=AddJISPElement(jleTypeRational_k,(yyvsp[(1) - (1)]));;}
+#line 85 "..\\..\\JISPParse\\JISPGrammar.y"
+    {(yyval)=AddJISPElement(jleTypeInteger_k,(yyvsp[(1) - (1)]));;}
     break;
 
   case 19:
 
 /* Line 1455 of yacc.c  */
-#line 82 "..\\..\\JISPParse\\JISPGrammar.y"
+#line 86 "..\\..\\JISPParse\\JISPGrammar.y"
+    {(yyval)=AddJISPElement(jleTypeFloat_k,(yyvsp[(1) - (1)]));;}
+    break;
+
+  case 20:
+
+/* Line 1455 of yacc.c  */
+#line 87 "..\\..\\JISPParse\\JISPGrammar.y"
+    {(yyval)=AddJISPElement(jleTypeRational_k,(yyvsp[(1) - (1)]));;}
+    break;
+
+  case 21:
+
+/* Line 1455 of yacc.c  */
+#line 88 "..\\..\\JISPParse\\JISPGrammar.y"
     {(yyval)=AddJISPElement(jleTypeCharacter_k,(yyvsp[(1) - (1)]));;}
     break;
 
 
 
 /* Line 1455 of yacc.c  */
-#line 1494 "..\\..\\JISPParse\\JISPGrammar.c"
+#line 1522 "..\\..\\JISPParse\\JISPGrammar.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -1702,7 +1730,7 @@ yyreturn:
 
 
 /* Line 1675 of yacc.c  */
-#line 86 "..\\..\\JISPParse\\JISPGrammar.y"
+#line 92 "..\\..\\JISPParse\\JISPGrammar.y"
 
 
 

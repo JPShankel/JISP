@@ -462,6 +462,126 @@ namespace JISP
     }
     /////////////////////////////
 
+    bool JISPLetFunction(JISPContext_t *context,const char *fn,const ListElementVector_t *parameters,ListElement_t *output)
+    {
+        if (parameters->size() > 1)
+        {
+            std::string fnStr = fn;
+            bool letStar = false;
+            if (fnStr == "let*")
+            {
+                letStar = true;
+            }
+
+            ListElement_t letBindings;
+            const ListElementIterator_t *it;
+
+            it = IteratorFromListElement(&(*parameters)[0]);
+            if (it->type_ != jleTypeList_k)
+            {
+                JISPError(context,"Error - invalid syntax let");
+                return false;
+            }
+
+
+            letBindings = (*parameters)[0];
+
+            const ListElementIterator_t *pit = IteratorFromListElement(&letBindings);
+            if (pit->type_ != jleTypeList_k)
+            {
+                JISPError(context,"Error - invalid syntax let");
+                return false;
+            }
+
+            JISPDefineMap_t letParameterMap,letStarParameterMap;
+
+            if (letStar)
+            {
+                letStarParameterMap = context->letStack_.top();
+            }
+
+            while (pit != 0 && pit->carLen_ > 0)
+            {
+                ListElement_t letBinding;
+                JISPCAR(&letBindings,&letBinding);
+                JISPCDR(&letBindings,&letBindings);
+                pit = IteratorFromListElement(&letBindings);
+
+                const ListElementIterator_t *lit = IteratorFromListElement(&letBinding);
+                if (lit->type_ != jleTypeList_k)
+                {
+                    JISPError(context,"Error - invalid syntax let");
+                    return false;
+                }
+
+
+                ListElement_t expr,var;
+                
+                JISPCAR(&letBinding,&var);
+                JISPCDR(&letBinding,&expr);
+                JISPCAR(&expr,&expr);
+
+                lit = IteratorFromListElement(&var);
+                if (lit->type_ != jleTypeIdentifier_k)
+                {
+                    JISPError(context,"Error - invalid syntax let");
+                    return false;
+                }
+
+                if (letStar)
+                {
+                    context->letStack_.push(letStarParameterMap);
+                }
+
+                if (!EvaluateListElement(context,&expr,&expr))
+                {
+                    if (letStar)
+                    {
+                        context->letStack_.pop();
+                    }
+                    JISPError(context,"Error - invalid syntax let");
+                    return false;
+                }
+
+
+                std::string varStr = reinterpret_cast<const char *>(lit->data_);
+
+                letParameterMap.insert(JISPDefineMap_t::value_type(varStr,expr));
+                if (letStar)
+                {
+                    context->letStack_.pop();
+                    letStarParameterMap.erase(varStr);
+                    letStarParameterMap.insert(JISPDefineMap_t::value_type(varStr,expr));
+                }
+            }
+
+            context->letStack_.push(letParameterMap);
+
+            for (size_t i=1,iend=parameters->size();i<iend;++i)
+            {
+                ListElement_t evaluated;
+                if (!EvaluateListElement(context,&(*parameters)[i],&evaluated))
+                {
+                    context->letStack_.pop();
+                    JISPError(context,"Error - invalid syntax let");
+                    return false;
+                }
+
+                if (i==iend-1)
+                {
+                    (*output) = evaluated;
+                }                
+            }
+            context->letStack_.pop();
+
+            return true;
+
+        }
+        JISPError(context,"Error - let invalid syntax");
+        return false;
+    }
+    /////////////////////////////
+
     bool JISPCondFunction(JISPContext_t *context,const char *fn,const ListElementVector_t *parameters,ListElement_t *output)
     {
         size_t i,iend;
@@ -1343,6 +1463,8 @@ namespace JISP
         ret->functionMap_.insert(JISPFunctionMap_t::value_type("null?",JISPUnaryQuery));
         ret->functionMap_.insert(JISPFunctionMap_t::value_type("exit",JISPSystemFunction));
         ret->functionMap_.insert(JISPFunctionMap_t::value_type("cond",JISPCondFunction));
+        ret->functionMap_.insert(JISPFunctionMap_t::value_type("let",JISPLetFunction));
+        ret->functionMap_.insert(JISPFunctionMap_t::value_type("let*",JISPLetFunction));
 
         bool bsf = BuildStandardFunctions(ret);
         assert(bsf);
