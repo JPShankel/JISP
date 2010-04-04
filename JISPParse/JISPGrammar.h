@@ -50,7 +50,8 @@
      CLOSEDPAREN = 266,
      OPENBRACKET = 267,
      CLOSEDBRACKET = 268,
-     QUOTE = 269
+     QUOTE = 269,
+     DOT = 270
    };
 #endif
 

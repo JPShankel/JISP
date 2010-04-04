@@ -39,6 +39,14 @@ namespace JISP
     }
     /////////////////////////////
 
+    ListElementTypes_t GetListElementType(const ListElement_t *element)
+    {
+        const ListElementIterator_t *it = IteratorFromListElement(element);
+        return it != 0 ? (it->type_) : jleTypeUnknown_k;
+    }
+    /////////////////////////////
+
+
     bool CreateListElement(ListElementTypes_t type,const void *data,unsigned int dataLength,ListElement_t *jle)
     {
         unsigned int cdrLength = 0;
@@ -69,7 +77,47 @@ namespace JISP
         return true;
     }
     /////////////////////////////
+    
+    bool JISPAppend(const ListElement_t *list,const ListElement_t *toAppend,ListElement_t *output)
+    {
 
+        ListElement_t localOutput = *list;
+
+        if (localOutput.empty()) 
+        {
+            return false;
+        }
+
+        const ListElementIterator_t *toAppendSrcIt = IteratorFromListElement(toAppend);
+        size_t originalDestSize = localOutput.size();
+        ListElementIterator_t *toAppendDestIt = reinterpret_cast<ListElementIterator_t *>(&localOutput[originalDestSize - sizeof(ListElementIterator_t)]);
+
+        if (toAppendDestIt->type_ != jleTypeList_k || toAppendDestIt->carLen_ != 0 || toAppendDestIt->cdrLen_ != 0)
+        {
+            return false;
+        }
+
+        localOutput.resize(originalDestSize + toAppendSrcIt->carLen_ + toAppendSrcIt->cdrLen_);
+        toAppendDestIt = reinterpret_cast<ListElementIterator_t *>(&localOutput[originalDestSize - sizeof(ListElementIterator_t)]);
+
+        memcpy(&(*toAppendDestIt).data_[0],toAppendSrcIt->data_,toAppendSrcIt->carLen_ + toAppendSrcIt->cdrLen_);
+        toAppendDestIt->type_ = toAppendSrcIt->type_;
+        toAppendDestIt->carLen_ = toAppendSrcIt->carLen_;
+        toAppendDestIt->cdrLen_ = toAppendDestIt->cdrLen_;
+
+        size_t cdrIndex = 0;
+        //must correct all cdr lengths
+        while (cdrIndex < originalDestSize)
+        {
+            ListElementIterator_t *cdrIt = reinterpret_cast<ListElementIterator_t *>(&localOutput[cdrIndex]);
+            cdrIt->cdrLen_ += (toAppendSrcIt->carLen_ + toAppendSrcIt->cdrLen_);
+            cdrIndex += sizeof(ListElementIterator_t) + cdrIt->carLen_;
+        }
+
+        (*output) = localOutput;
+        return true;
+    }
+    /////////////////////////////
 
     bool JISPCons(const ListElement_t *car,const ListElement_t *cdr,ListElement_t *output)
     {
@@ -655,6 +703,7 @@ namespace JISP
         ListElement_t lambdaParams;
         JISPCDR(lambdaFunc,&lambdaParams);
         JISPCAR(&lambdaParams,&lambdaParams);
+
         if (lambdaParams.empty())
         {
             JISPError(context,"Error - invalid syntax");
@@ -663,7 +712,17 @@ namespace JISP
 
         ListElement_t lp,lps;
         lps = lambdaParams;
-        JISPCAR(&lps,&lp);
+
+
+        if (GetListElementType(&lps) == jleTypeList_k)
+        {
+            JISPCAR(&lps,&lp);
+        }
+        else
+        {
+            lp = lps;
+        }
+        
 
         const ListElementIterator_t *carIterator = IteratorFromListElement(&lp);
         if (carIterator == 0)
@@ -674,6 +733,7 @@ namespace JISP
 
         std::vector<std::string> paramNames;
 
+        size_t listParameterIndex = 0;
         while (carIterator != 0)
         {
             if (carIterator->type_ != jleTypeIdentifier_k)
@@ -684,12 +744,27 @@ namespace JISP
             
             paramNames.push_back(reinterpret_cast<const char *>(carIterator->data_));
 
-            JISPCDR(&lps,&lps);
-            JISPCAR(&lps,&lp);
-            carIterator = IteratorFromListElement(&lp);
+            if (GetListElementType(&lps) == jleTypeList_k)
+            {
+                JISPCDR(&lps,&lps);
+                listParameterIndex++;
+                if (GetListElementType(&lps) == jleTypeList_k)
+                {
+                    JISPCAR(&lps,&lp);
+                }
+                else
+                {
+                    lp = lps;
+                }
+                carIterator = IteratorFromListElement(&lp);
+            }
+            else
+            {
+                break;
+            }
         }
 
-        if (paramNames.size()!= parameters->size())
+        if (listParameterIndex == paramNames.size() && paramNames.size()!= parameters->size())
         {
             JISPError(context,"Error - incorrect parameter count");
             return false;
@@ -698,11 +773,24 @@ namespace JISP
         JISPDefineMap_t parameterMap;
 
         size_t i,iend;
-        for (i=0,iend=paramNames.size();i<iend;++i)
+        for (i=0,iend=listParameterIndex;i<iend;++i)
         {
             ListElement_t evaluatedParameter;
             EvaluateListElement(context,&(*parameters)[i],&evaluatedParameter);
             parameterMap.insert(JISPDefineMap_t::value_type(paramNames[i],evaluatedParameter));
+        }
+
+        if (listParameterIndex < paramNames.size())
+        {
+            ListElement_t l;
+            JISP::CreateListElement(jleTypeList_k,0,0,&l);
+            for (i=parameters->size(),iend = listParameterIndex;i > iend;--i)
+            {
+                ListElement_t evaluatedParameter;
+                EvaluateListElement(context,&(*parameters)[i-1],&evaluatedParameter);
+                JISPCons(&evaluatedParameter,&l,&l);
+            }
+            parameterMap.insert(JISPDefineMap_t::value_type(paramNames.back(),l));
         }
 
         ListElement_t functionExpression;
@@ -751,8 +839,6 @@ namespace JISP
             }
             else if (lei->type_ == jleTypeList_k)
             {
-                std::string str;
-                JISP::ListElementToStringConcise(&(*dit).second,&str);
                 ListElement_t car;
                 JISPCAR(&(*dit).second,&car);
                 ListElementIterator_t *carIterator = IteratorFromListElement(&car);

@@ -53,7 +53,10 @@ extern int jisp_parse_line;
 
 [+/\-*] {if (in_comment) REJECT;yylval = AddToken(yytext);return IDENTIFIER;}
 
-. { if(in_comment) REJECT; }
+[.] { if(in_comment) REJECT; yylval = AddToken(yytext);return DOT;}
+
+. { if (in_comment) REJECT; }
+
 %%
 
 static char *inputStream;

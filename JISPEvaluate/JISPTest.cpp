@@ -173,7 +173,39 @@ namespace JISP
         ret = ret && (testString == "(cons ' A ' (B))");
         testString.clear();
 
+        JISP::StringToListElement("(A . B)",&element1);
+        JISP::ListElementToStringConcise(&element1,&testString);
+        ret = ret && (testString == "(A . B)");
+        testString.clear();
+
+        JISP::StringToListElement("((A B) . C)",&element1);
+        JISP::ListElementToStringConcise(&element1,&testString);
+        ret = ret && (testString == "((A B) . C)");
+        testString.clear();
+
+        JISP::StringToListElement("(A B . C)",&element1);
+        JISP::ListElementToStringConcise(&element1,&testString);
+        ret = ret && (testString == "(A B . C)");
+        testString.clear();
+
         // Evaluation
+        JISP::StringToListElement("'(B . C)",&element1);
+        JISP::ListElementToStringConcise(&element1,&testString);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+        ret = ret && (testString == "(B . C)");
+
+        JISP::StringToListElement("(cdr '(A B . C))",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+        ret = ret && (testString == "(B . C)");
+        
+        JISP::StringToListElement("(cdr '(B . C))",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+        ret = ret && (testString == "C");
+
+        JISP::StringToListElement("(cons 'A '(B))",&element1);
         JISP::EvaluateListElement(context,&element1,&element2);
         JISP::ListElementToStringConcise(&element2,&testString);
         ret = ret && (testString == "(A B)");
@@ -449,6 +481,20 @@ namespace JISP
 
         ret = ret && (testString == "1");
 
+        JISP::StringToListElement("((lambda x x) 1 2 3 4)",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+
+        ret = ret && (testString == "(1 2 3 4)");
+        
+
+        JISP::StringToListElement("((lambda (x y . z) z) (+ 10 1) 12 (+ 2 11) 14)",&element1);
+        JISP::ListElementToStringConcise(&element1,&testString);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+
+        ret = ret && (testString == "(13 14)");
+
         // recursion
         JISP::StringToListElement("(define a (lambda (x) (cond ((eq? x 1) 1) (else (* x (a (- x 1)))))))",&element1);
         JISP::EvaluateListElement(context,&element1,&element2);
@@ -520,7 +566,7 @@ namespace JISP
         ret = ret && (testString == "3");
         
 
-        // let, let*, letrec, letrec*
+        // let, let*
         JISP::StringToListElement("(let ([x 1]) (+ x 1) (+ x 2) (+ x 3))",&element1);
         JISP::EvaluateListElement(context,&element1,&element2);
         JISP::ListElementToStringConcise(&element2,&testString);
@@ -546,7 +592,6 @@ namespace JISP
         ret = ret && (testString == "3");
         
         JISP::StringToListElement("(let ([x 1][y 2]) (let* ([y x][x y]) (+ x y)))",&element1);
-//        JISP::StringToListElement("(let* ([x 1][y 2])  (* x y))",&element1);
         JISP::EvaluateListElement(context,&element1,&element2);
         JISP::ListElementToStringConcise(&element2,&testString);
 

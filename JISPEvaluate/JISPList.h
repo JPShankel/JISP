@@ -35,6 +35,7 @@ namespace JISP
     };
 
     bool JISPCons(const ListElement_t *car,const ListElement_t *cdr,ListElement_t *output);
+    bool JISPAppend(const ListElement_t *list,const ListElement_t *toAppend,ListElement_t *output);
     bool JISPCAR(const ListElement_t *jle,ListElement_t *output);
     bool JISPCDR(const ListElement_t *jle,ListElement_t *output);
 
@@ -45,6 +46,8 @@ namespace JISP
     bool StringToListElement(const char *str,ListElement_t *jle);
 
     bool EvaluateListElement(JISPContext_t *context,const ListElement_t *input,ListElement_t *output);
+
+    ListElementTypes_t GetListElementType(const ListElement_t *element);
 
     JISPContext_t *CreateJISPContext();
     void DestroyJISPContext(JISPContext_t *context);

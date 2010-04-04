@@ -56,6 +56,14 @@ extern "C"
         return static_cast<int>(listElements_s.size()-1);
     }
 
+    unsigned int EndJISPElementDottedList(unsigned int list, unsigned int cdr)
+    {
+        unsigned int l = EndJISPElementList(list);
+        JISP::JISPAppend(&listElements_s.back(),&listElements_s[cdr],&listElements_s.back());
+        return l;
+    }
+
+
     unsigned int BeginJISPElementList(unsigned int element)
     {
         elementListLists_s.push_back(std::vector<int>());

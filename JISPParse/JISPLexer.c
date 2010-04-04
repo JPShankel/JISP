@@ -294,31 +294,31 @@ static void yy_fatal_error YY_PROTO(( yyconst char msg[] ));
 	yy_more_offset = 0; \
 	yy_c_buf_p = yy_cp;
 
-#define YY_NUM_RULES 28
-#define YY_END_OF_BUFFER 29
-static yyconst short int yy_acclist[66] =
+#define YY_NUM_RULES 29
+#define YY_END_OF_BUFFER 30
+static yyconst short int yy_acclist[67] =
     {   0,
-       29,   27,   28,   28,   27,   28,   27,   28,   18,   27,
-       28,   14,   27,   28,   15,   27,   28,   26,   27,   28,
-       27,   28,   20,   27,   28,   24,   27,   28,   16,   27,
-       28,   17,   27,   28,   25,    1,   23,   20,   24,   19,
+       30,   28,   29,   29,   28,   29,   28,   29,   18,   28,
+       29,   14,   28,   29,   15,   28,   29,   26,   28,   29,
+       27,   28,   29,   20,   28,   29,   24,   28,   29,   16,
+       28,   29,   17,   28,   29,   25,    1,   23,   20,   24,
        19,   19,   19,   19,   19,   19,   19,   19,   19,   19,
-       19,   22,   21,    2,    5,    9,    8,    3,   12,   13,
-       11,   10,    6,    7,    4
+       19,   19,   22,   21,    2,    5,    9,    8,    3,   12,
+       13,   11,   10,    6,    7,    4
     } ;
 
 static yyconst short int yy_accept[96] =
     {   0,
         1,    1,    1,    2,    4,    5,    7,    9,   12,   15,
-       18,   21,   23,   26,   29,   32,   35,   35,   36,   37,
-       37,   38,   38,   38,   39,   40,   41,   42,   43,   44,
-       45,   46,   47,   48,   49,   50,   51,   52,   53,   54,
-       54,   54,   54,   54,   54,   54,   54,   54,   54,   54,
-       54,   54,   54,   54,   54,   54,   54,   54,   55,   55,
-       55,   55,   56,   56,   56,   56,   56,   56,   56,   56,
-       57,   57,   57,   58,   59,   59,   59,   59,   59,   59,
-       59,   60,   60,   61,   62,   62,   62,   63,   63,   63,
-       64,   64,   65,   66,   66
+       18,   21,   24,   27,   30,   33,   36,   36,   37,   38,
+       38,   39,   39,   39,   40,   41,   42,   43,   44,   45,
+       46,   47,   48,   49,   50,   51,   52,   53,   54,   55,
+       55,   55,   55,   55,   55,   55,   55,   55,   55,   55,
+       55,   55,   55,   55,   55,   55,   55,   55,   56,   56,
+       56,   56,   57,   57,   57,   57,   57,   57,   57,   57,
+       58,   58,   58,   59,   60,   60,   60,   60,   60,   60,
+       60,   61,   61,   62,   63,   63,   63,   64,   64,   64,
+       65,   65,   66,   67,   67
 
     } ;
 
@@ -856,14 +856,19 @@ YY_RULE_SETUP
 case 27:
 YY_RULE_SETUP
 #line 56 "..\\..\\JISPParse\\JISPLexer.l"
-{ if(in_comment) REJECT; }
+{ if(in_comment) REJECT; yylval = AddToken(yytext);return DOT;}
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 57 "..\\..\\JISPParse\\JISPLexer.l"
+#line 58 "..\\..\\JISPParse\\JISPLexer.l"
+{ if (in_comment) REJECT; }
+	YY_BREAK
+case 29:
+YY_RULE_SETUP
+#line 60 "..\\..\\JISPParse\\JISPLexer.l"
 ECHO;
 	YY_BREAK
-#line 867 "..\\..\\JISPParse\\JISPLexer.c"
+#line 872 "..\\..\\JISPParse\\JISPLexer.c"
 			case YY_STATE_EOF(INITIAL):
 				yyterminate();
 
@@ -1747,7 +1752,7 @@ int main()
 	return 0;
 	}
 #endif
-#line 57 "..\\..\\JISPParse\\JISPLexer.l"
+#line 60 "..\\..\\JISPParse\\JISPLexer.l"
 
 
 static char *inputStream;

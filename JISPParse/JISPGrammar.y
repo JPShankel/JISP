@@ -16,6 +16,7 @@ unsigned int AddQuotedElement(unsigned int type, unsigned int dataIndex);
 unsigned int AddJISPElementToList(unsigned int elist, unsigned int element);
 unsigned int BeginJISPElementList(unsigned int element);
 unsigned int EndJISPElementList(unsigned int list);
+unsigned int EndJISPElementDottedList(unsigned int list, unsigned int cdr);
 
 unsigned int NullJISPList();
 
@@ -50,6 +51,7 @@ const unsigned int jleTypeUnknown_k =10;
 %token CLOSEDBRACKET
 
 %token QUOTE
+%token DOT
 
 
 
@@ -63,6 +65,8 @@ statement: list {$$=$1;}
 list: OPENPAREN list_elements CLOSEDPAREN {$$=EndJISPElementList($2);}
 | OPENPAREN CLOSEDPAREN { $$=NullJISPList(); }
 | OPENBRACKET list_elements CLOSEDBRACKET {$$=EndJISPElementList($2);}
+| OPENBRACKET list_elements DOT list_element CLOSEDBRACKET {$$=EndJISPElementDottedList($2,$4);}
+| OPENPAREN list_elements DOT list_element CLOSEDPAREN {$$=EndJISPElementDottedList($2,$4);}
 | OPENBRACKET CLOSEDBRACKET { $$=NullJISPList(); }
 ;
 

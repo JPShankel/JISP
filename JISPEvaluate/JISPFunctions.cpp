@@ -53,7 +53,9 @@ namespace JISP
 
         "(define nand (lambda (op1 op2) \
             (not (and op1 op2)) \
-            ))"
+            ))",
+
+        "(define list (lambda x x))"
 
     };
 
