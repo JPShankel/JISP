@@ -18,7 +18,6 @@
 namespace JISP
 {
 
-
     struct ListElementIterator_t
     {
         ListElementTypes_t type_;
@@ -45,7 +44,6 @@ namespace JISP
         return it != 0 ? (it->type_) : jleTypeUnknown_k;
     }
     /////////////////////////////
-
 
     bool CreateListElement(ListElementTypes_t type,const void *data,unsigned int dataLength,ListElement_t *jle)
     {
@@ -141,6 +139,7 @@ namespace JISP
         const ListElementIterator_t *jleIterator = IteratorFromListElement(jle);
         ListElement_t localOutput;
         localOutput.resize(jleIterator->carLen_);
+        if (jleIterator->carLen_ > 0)
         memcpy(&localOutput[0],jleIterator->data_,jleIterator->carLen_);
         (*output) = localOutput;
         return true;
@@ -161,6 +160,11 @@ namespace JISP
 
     void ListElementToStringVerboseRecurse(const ListElementIterator_t *jle,std::string *str)
     {
+        if (jle->type_ == jleTypeEllipsis_k)
+        {
+            (*str) += " ...";
+            return;
+        }
         if (jle->type_ == jleTypeBoolean_k)
         {
             const bool *v = reinterpret_cast<const bool *>(jle->data_);
@@ -211,6 +215,11 @@ namespace JISP
 
     void ListElementToStringConciseRecurse(const ListElementIterator_t *jle,std::string *str,bool car)
     {
+        if (jle->type_ == jleTypeEllipsis_k)
+        {
+            (*str) += " ...";
+            return;
+        }
         if (jle->type_ == jleTypeBoolean_k)
         {
             const bool *v = reinterpret_cast<const bool *>(jle->data_);
@@ -303,8 +312,6 @@ namespace JISP
             {
                 (*str) = (*str).substr(0,(*str).length()-1);
             }
-            
-
             return true;
         }
         return false;
@@ -331,6 +338,21 @@ namespace JISP
     typedef std::map<std::string,ListElement_t> JISPDefineMap_t;
 
     typedef std::stack<JISPDefineMap_t>  JISPLetStack_t;
+
+    struct JISPPatternTemplatePair_t
+    {
+        ListElement_t pattern_,template_;
+    };
+    typedef std::vector<JISPPatternTemplatePair_t> JISPPatternTemplatePairVector_t;
+
+    struct JISPSyntax_t
+    {
+        std::string name_;
+        ListElement_t syntaxRules_;
+        JISPPatternTemplatePairVector_t patternTemplatePairVector_;
+    };
+    typedef std::map<std::string,JISPSyntax_t> JISPSyntaxMap_t;
+
     /////////////////////////////
 
     struct JISPContext_t
@@ -338,6 +360,7 @@ namespace JISP
         JISPFunctionMap_t functionMap_;
         JISPDefineMap_t defineMap_;
         JISPLetStack_t letStack_;
+        JISPSyntaxMap_t defineSyntaxMap_;
 
         JISPOutputHandler_t outputHandler_,errorHandler_;
         void *outputHandlerData_,*errorHandlerData_;
@@ -495,6 +518,125 @@ namespace JISP
         }
         return false;
     }
+    /////////////////////////////
+
+
+
+    bool JISPCheckPatternTemplatePair(const JISPPatternTemplatePair_t *ptp)
+    {
+        return true;
+    }
+
+    bool JISPDefineSyntax(JISPContext_t *context,const char *fn,const ListElementVector_t *parameters,ListElement_t *output)
+    {
+        std::string fnStr = fn;
+        if (fnStr != "define-syntax")
+        {
+            JISPError(context,"Error - unidentified function in define-syntax");
+            return false;
+        }
+        if (parameters->size() != 2)
+        {
+            JISPError(context,"Error - wrong number of parameters in define-syntax");
+            return false;
+        }
+
+        JISPSyntax_t syntax;
+        
+        const ListElementIterator_t *it = IteratorFromListElement(&(*parameters)[0]);
+
+        if (it->type_ != jleTypeIdentifier_k)
+        {
+            JISPError(context,"Error - syntax error in define-syntax");
+            return false;
+        }
+
+        syntax.name_ = reinterpret_cast<const char *>(it->data_);
+
+        if (GetListElementType(&(*parameters)[1]) != jleTypeList_k)
+        {
+            JISPError(context,"Error - syntax error in define-syntax");
+            return false;
+        }
+
+        const ListElement_t *le = &(*parameters)[1];
+
+        ListElement_t car,cdr;
+        JISPCAR(le,&car);
+        JISPCDR(le,&cdr);
+
+        it = IteratorFromListElement(&car);
+        if (it->type_ != jleTypeIdentifier_k)
+        {
+            JISPError(context,"Error - syntax error expected 'syntax-rules' in define-syntax");
+            return false;
+        }
+
+        std::string checkStr = reinterpret_cast<const char *>(it->data_);
+        if (checkStr != "syntax-rules")
+        {
+            JISPError(context,"Error - syntax error expected 'syntax-rules' in define-syntax");
+            return false;
+        }
+
+        if (cdr.empty())
+        {
+            JISPError(context,"Error - syntax error in define-syntax");
+            return false;
+        }
+
+        JISPCAR(&cdr,&car);
+        JISPCDR(&cdr,&cdr);
+        syntax.syntaxRules_ = car;
+        
+
+        if (cdr.empty())
+        {
+            JISPError(context,"Error - syntax error missing pattern/template pair in define-syntax");
+            return false;
+        }
+
+        JISPCAR(&cdr,&car);
+        JISPCDR(&cdr,&cdr);
+
+        while (!cdr.empty())
+        {
+
+            syntax.patternTemplatePairVector_.push_back(JISPPatternTemplatePair_t());
+            JISPPatternTemplatePair_t &ptp = syntax.patternTemplatePairVector_.back();
+
+            if (GetListElementType(&car) != jleTypeList_k)
+            {
+                JISPError(context,"Error - bad pattern/template pair in define-syntax");
+                return false;
+            }
+
+            JISPCAR(&car,&ptp.pattern_);
+            JISPCDR(&car,&car);
+            
+            if (car.empty())
+            {
+                JISPError(context,"Error - bad pattern/template pair in define-syntax");
+                return false;
+            }
+            JISPCAR(&car,&ptp.template_);
+            std::string stmp,ptrn;
+            JISP::ListElementToStringConcise(&ptp.template_,&stmp);
+            JISP::ListElementToStringConcise(&ptp.pattern_,&ptrn);
+
+            if (!JISPCheckPatternTemplatePair(&ptp))
+            {
+                JISPError(context,"Error - bad pattern/template pair in define-syntax");
+                return false;
+            }
+
+            JISPCAR(&cdr,&car);
+            JISPCDR(&cdr,&cdr);
+        }
+        context->defineSyntaxMap_.insert(JISPSyntaxMap_t::value_type(syntax.name_,syntax));
+        return true;
+    }
+
     /////////////////////////////
 
     bool JISPSystemFunction(JISPContext_t *context,const char *fn,const ListElementVector_t *parameters,ListElement_t *output)
@@ -747,7 +889,16 @@ namespace JISP
             if (GetListElementType(&lps) == jleTypeList_k)
             {
                 JISPCDR(&lps,&lps);
+
+                const ListElementIterator_t *cdrIterator = IteratorFromListElement(&lps);
+
                 listParameterIndex++;
+
+                if (cdrIterator->carLen_ == 0)
+                {
+                    break;
+                }
+
                 if (GetListElementType(&lps) == jleTypeList_k)
                 {
                     JISPCAR(&lps,&lp);
@@ -1534,6 +1685,8 @@ namespace JISP
         ret->functionMap_.insert(JISPFunctionMap_t::value_type("car",JISPCarFunction));
         ret->functionMap_.insert(JISPFunctionMap_t::value_type("cdr",JISPCdrFunction));
         ret->functionMap_.insert(JISPFunctionMap_t::value_type("eq?",JISPBinaryComparison));
+        ret->functionMap_.insert(JISPFunctionMap_t::value_type("eqv?",JISPBinaryComparison));
+        ret->functionMap_.insert(JISPFunctionMap_t::value_type("equal?",JISPBinaryComparison));
         ret->functionMap_.insert(JISPFunctionMap_t::value_type("=",JISPBinaryComparison));
         ret->functionMap_.insert(JISPFunctionMap_t::value_type(">",JISPBinaryComparison));
         ret->functionMap_.insert(JISPFunctionMap_t::value_type(">=",JISPBinaryComparison));
@@ -1551,6 +1704,7 @@ namespace JISP
         ret->functionMap_.insert(JISPFunctionMap_t::value_type("cond",JISPCondFunction));
         ret->functionMap_.insert(JISPFunctionMap_t::value_type("let",JISPLetFunction));
         ret->functionMap_.insert(JISPFunctionMap_t::value_type("let*",JISPLetFunction));
+        ret->functionMap_.insert(JISPFunctionMap_t::value_type("define-syntax",JISPDefineSyntax));
 
         bool bsf = BuildStandardFunctions(ret);
         assert(bsf);

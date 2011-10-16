@@ -29,6 +29,7 @@ extern int jisp_parse_line;
 "#\\escape" {if (in_comment) REJECT;yylval = AddToken(yytext);return CHARACTER;}
 "#\\space" {if (in_comment) REJECT;yylval = AddToken(yytext);return CHARACTER;}
 "#\\delete" {if (in_comment) REJECT;yylval = AddToken(yytext);return CHARACTER;}
+"..." {if (in_comment) REJECT;yylval = AddToken(yytext);return ELLIPSIS;}
 
 
 [(] {if (in_comment) REJECT;yylval = AddToken(yytext);return OPENPAREN;}
@@ -47,7 +48,7 @@ extern int jisp_parse_line;
 
 [.][0-9]+ {if (in_comment) REJECT;yylval = AddToken(yytext);return FLOAT;}
 
-[A-Za-z][A-Za-z0-9_\?*$#@]* {if (in_comment) REJECT;yylval = AddToken(yytext);return IDENTIFIER;}
+[A-Za-z_][A-Za-z0-9_\?\-*$#@]* {if (in_comment) REJECT;yylval = AddToken(yytext);return IDENTIFIER;}
 
 [\"][A-Za-z0-9_ !@#$%^&*()\-+={}\\|\[\]\?><,./;:']*[\"] {if (in_comment) REJECT;yylval = AddToken(yytext);return STRING;}
 

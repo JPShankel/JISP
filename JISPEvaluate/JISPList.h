@@ -21,18 +21,20 @@ namespace JISP
 
     enum ListElementTypes_t 
     {
-     jleTypeCharacter_k = 0,
-     jleTypeString_k,
-     jleTypeInteger_k,
-     jleTypeRational_k,
-     jleTypeFloat_k,
-     jleTypeComplex_k,
-     jleTypeQuoted_k,
-     jleTypeBoolean_k,
-     jleTypeIdentifier_k,
-     jleTypeList_k,
-     jleTypeUnknown_k
+        jleTypeCharacter_k = 0,
+        jleTypeString_k,
+        jleTypeInteger_k,
+        jleTypeRational_k,
+        jleTypeFloat_k,
+        jleTypeComplex_k,
+        jleTypeQuoted_k,
+        jleTypeBoolean_k,
+        jleTypeIdentifier_k,
+        jleTypeList_k,
+        jleTypeEllipsis_k,
+        jleTypeUnknown_k
     };
+
 
     bool JISPCons(const ListElement_t *car,const ListElement_t *cdr,ListElement_t *output);
     bool JISPAppend(const ListElement_t *list,const ListElement_t *toAppend,ListElement_t *output);

@@ -51,7 +51,8 @@
      OPENBRACKET = 267,
      CLOSEDBRACKET = 268,
      QUOTE = 269,
-     DOT = 270
+     DOT = 270,
+     ELLIPSIS = 271
    };
 #endif
 

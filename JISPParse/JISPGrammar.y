@@ -15,7 +15,8 @@ unsigned int AddQuotedElement(unsigned int type, unsigned int dataIndex);
 
 unsigned int AddJISPElementToList(unsigned int elist, unsigned int element);
 unsigned int BeginJISPElementList(unsigned int element);
-unsigned int EndJISPElementList(unsigned int list);
+unsigned int EndJISPElementList(unsigned int elist);
+unsigned int EndJISPElementListEllipsis(unsigned int elist);
 unsigned int EndJISPElementDottedList(unsigned int list, unsigned int cdr);
 
 unsigned int NullJISPList();
@@ -52,6 +53,7 @@ const unsigned int jleTypeUnknown_k =10;
 
 %token QUOTE
 %token DOT
+%token ELLIPSIS
 
 
 
@@ -64,6 +66,8 @@ statement: list {$$=$1;}
 
 list: OPENPAREN list_elements CLOSEDPAREN {$$=EndJISPElementList($2);}
 | OPENPAREN CLOSEDPAREN { $$=NullJISPList(); }
+| OPENPAREN list_elements ELLIPSIS CLOSEDPAREN{$$=EndJISPElementListEllipsis($2);}
+| OPENBRACKET list_elements ELLIPSIS CLOSEDBRACKET {$$=EndJISPElementListEllipsis($2);}
 | OPENBRACKET list_elements CLOSEDBRACKET {$$=EndJISPElementList($2);}
 | OPENBRACKET list_elements DOT list_element CLOSEDBRACKET {$$=EndJISPElementDottedList($2,$4);}
 | OPENPAREN list_elements DOT list_element CLOSEDPAREN {$$=EndJISPElementDottedList($2,$4);}

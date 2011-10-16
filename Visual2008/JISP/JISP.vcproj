@@ -4,6 +4,7 @@
 	Version="9.00"
 	Name="JISP"
 	ProjectGUID="{12248873-0A89-42C6-B5FF-0633A3FA0423}"
+	RootNamespace="JISP"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
 	>
@@ -181,7 +182,15 @@
 				Name="Source"
 				>
 				<File
+					RelativePath="..\..\JISPEvaluate\JISPFunctions.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\JISPEvaluate\JISPList.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\JISPEvaluate\JISPTest.cpp"
 					>
 				</File>
 			</Filter>

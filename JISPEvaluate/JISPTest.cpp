@@ -325,16 +325,12 @@ namespace JISP
 
         ret = ret && (testString == "7");
         
-        JISP::StringToListElement("()",&element1);
-
         JISP::StringToListElement("'()",&element1);
-        JISP::EvaluateListElement(context,&element1,&element2);
         JISP::ListElementToStringConcise(&element1,&testString);
-        
         ret = ret && (testString == "' ()");
 
+        JISP::EvaluateListElement(context,&element1,&element2);
         JISP::ListElementToStringConcise(&element2,&testString);
-
         ret = ret && (testString == "()");
 
         JISP::StringToListElement("(atom? 1)",&element1);
@@ -596,6 +592,29 @@ namespace JISP
         JISP::ListElementToStringConcise(&element2,&testString);
 
         ret = ret && (testString == "2");
+
+        JISP::StringToListElement("'(A ...)",&element1);
+        JISP::ListElementToStringConcise(&element1,&testString);
+        ret = ret && (testString == "' (A ...)");
+        
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+        ret = ret && (testString == "(A ...)");
+
+        JISP::StringToListElement("'(A (B C) ...)",&element1);
+        JISP::ListElementToStringConcise(&element1,&testString);
+        ret = ret && (testString == "' (A (B C) ...)");
+        
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
+        ret = ret && (testString == "(A (B C) ...)");
+
+        JISP::StringToListElement("(define-syntax plus1 (syntax-rules () [(_ x)(+ x 1)]))",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+
+        JISP::StringToListElement("(plus1 5)",&element1);
+        JISP::EvaluateListElement(context,&element1,&element2);
+        JISP::ListElementToStringConcise(&element2,&testString);
 
         DestroyJISPContext(context);
         return ret;

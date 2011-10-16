@@ -56,6 +56,13 @@ extern "C"
         return static_cast<int>(listElements_s.size()-1);
     }
 
+    unsigned int EndJISPElementListEllipsis(unsigned int elist)
+    {
+        std::vector<int> &elementList = elementListLists_s[elist];
+        elementList.push_back(1);
+        return EndJISPElementList(elist);
+    }
+
     unsigned int EndJISPElementDottedList(unsigned int list, unsigned int cdr)
     {
         unsigned int l = EndJISPElementList(list);
@@ -132,6 +139,11 @@ namespace JISP
         // null
         JISP::ListElement_t newList;
         JISP::CreateListElement(JISP::jleTypeList_k,0,0,&newList);
+        listElements_s.push_back(newList);
+
+        // ellipsis
+        newList.clear();
+        JISP::CreateListElement(JISP::jleTypeEllipsis_k,0,0,&newList);
         listElements_s.push_back(newList);
 
         compile(data);
