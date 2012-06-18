@@ -5,7 +5,7 @@
 **
 ** Copyright (c) 2009 - Jason Shankel
 */
-//bitbucket
+
 #include "JISPCompile.h"
 #include "..\JISPEvaluate\JISPList.h"
 
